@@ -1,4 +1,123 @@
 body {
     margin: 0;
+    font-family:
+        system-ui,
+        -apple-system,
+        sans-serif;
+    background-color: #f4f4f8;
+}
+
+.app-container {
+    max-width: 900px;
+    margin: 60px auto;
+    padding: 32px;
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+h1 {
+    text-align: center;
+    color: #2d2d2d;
+    margin-bottom: 24px;
+}
+
+.language-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.language-select {
+    flex: 1;
+    padding: 10px 12px;
+    font-size: 14px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    background-color: #fafafa;
+    cursor: pointer;
+}
+
+.textarea-row {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.translator-textarea {
+    flex: 1;
+    padding: 16px;
+    font-size: 15px;
+    font-family: inherit;
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    resize: vertical;
+    box-sizing: border-box;
+    width: 100%;
+}
+
+.translator-textarea:focus {
+    outline: none;
+    border-color: #4f46e5;
+}
+
+button {
+    display: block;
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    color: white;
+    background-color: #4f46e5;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+button:hover:not(:disabled) {
+    background-color: #4338ca;
+}
+
+button:disabled {
+    background-color: #a5a5a5;
+    cursor: not-allowed;
+}
+
+.swap-button {
+    align-self: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1px solid #e0e0e0;
+    background-color: white;
+    font-size: 14px;
+    cursor: pointer;
+    color: #4f46e5;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     padding: 0;
+}
+
+.swap-button:hover:not(:disabled) {
+    background-color: #f0f0ff;
+}
+
+.swap-button:disabled {
+    color: #ccc;
+    cursor: not-allowed;
+}
+
+.error-text {
+    color: #dc2626;
+    text-align: center;
+    margin-top: 12px;
+}
+
+@media (max-width: 640px) {
+    .textarea-row {
+        flex-direction: column;
+    }
 }

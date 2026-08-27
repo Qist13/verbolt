@@ -42,45 +42,71 @@ function App() {
         }
     };
 
+    const handleSwapLanguages = () => {
+        const newTargetLanguage =
+            sourceLanguage === "auto" ? "en" : sourceLanguage;
+
+        setSourceLanguage(targetLanguage);
+        setTargetLanguage(newTargetLanguage);
+
+        setInputText(translatedText);
+        setTranslatedText(inputText);
+    };
+
     return (
-        <div>
+        <div className="app-container">
             <h1>Verbolt</h1>
 
-            <select
-                value={sourceLanguage}
-                onChange={(e) => setSourceLanguage(e.target.value)}
-            >
-                <option value="auto">Auto-detect</option>
-                {Object.entries(languages).map(([name, code]) => (
-                    <option key={code} value={code}>
-                        {name[0].toUpperCase() + name.slice(1)}
-                    </option>
-                ))}
-            </select>
+            <div className="language-row">
+                <select
+                    className="language-select"
+                    value={sourceLanguage}
+                    onChange={(e) => setSourceLanguage(e.target.value)}
+                >
+                    <option value="auto">Auto-detect</option>
+                    {Object.entries(languages).map(([name, code]) => (
+                        <option key={code} value={code}>
+                            {name[0].toUpperCase() + name.slice(1)}
+                        </option>
+                    ))}
+                </select>
 
-            <select
-                value={targetLanguage}
-                onChange={(e) => setTargetLanguage(e.target.value)}
-            >
-                {Object.entries(languages).map(([name, code]) => (
-                    <option key={code} value={code}>
-                        {name[0].toUpperCase() + name.slice(1)}
-                    </option>
-                ))}
-            </select>
+                <button
+                    className="swap-button"
+                    onClick={handleSwapLanguages}
+                    disabled={isLoading}
+                    aria-label="Swap languages"
+                >
+                    ⇄
+                </button>
 
-            <div>
+                <select
+                    className="language-select"
+                    value={targetLanguage}
+                    onChange={(e) => setTargetLanguage(e.target.value)}
+                >
+                    {Object.entries(languages).map(([name, code]) => (
+                        <option key={code} value={code}>
+                            {name[0].toUpperCase() + name.slice(1)}
+                        </option>
+                    ))}
+                </select>
+            </div>
+
+            <div className="textarea-row">
                 <textarea
+                    className="translator-textarea"
                     value={inputText}
                     onChange={(e) => setInputText(e.target.value)}
                     placeholder="Enter text to translate"
-                    rows={4}
+                    rows={6}
                 />
                 <textarea
+                    className="translator-textarea"
                     value={translatedText}
                     readOnly
-                    rows={4}
-                    placeholder="Translated text"
+                    rows={6}
+                    placeholder="Translation will appear here"
                 />
             </div>
 
@@ -88,7 +114,7 @@ function App() {
                 {isLoading ? "Translating..." : "Translate"}
             </button>
 
-            {errorMessage && <p>{errorMessage}</p>}
+            {errorMessage && <p className="error-text">{errorMessage}</p>}
         </div>
     );
 }
