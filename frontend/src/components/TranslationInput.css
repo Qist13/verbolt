@@ -1,0 +1,57 @@
+.textarea-wrapper {
+    position: relative;
+    flex: 1;
+}
+
+.translator-textarea {
+    flex: 1;
+    padding: 16px;
+    font-size: 15px;
+    font-family: inherit;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    resize: vertical;
+    box-sizing: border-box;
+    width: 100%;
+    background-color: var(--container-bg);
+    color: var(--text-color);
+}
+
+.translator-textarea:focus {
+    outline: none;
+    border-color: var(--accent-color);
+}
+
+.char-counter {
+    position: absolute;
+    bottom: 8px;
+    right: 12px;
+    font-size: 12px;
+    color: var(--muted-text);
+    background-color: var(--overlay-bg);
+    padding: 2px 6px;
+    border-radius: 4px;
+    pointer-events: none;
+}
+
+.clear-button {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: none;
+    background-color: var(--container-bg);
+    color: var(--icon-color);
+    font-size: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+}
+
+.clear-button:hover:not(:disabled) {
+    background-color: var(--accent-light);
+}

@@ -1,0 +1,69 @@
+.textarea-wrapper {
+    position: relative;
+    flex: 1;
+}
+
+.translator-textarea {
+    flex: 1;
+    padding: 16px;
+    font-size: 15px;
+    font-family: inherit;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    resize: vertical;
+    box-sizing: border-box;
+    width: 100%;
+    background-color: var(--container-bg);
+    color: var(--text-color);
+}
+
+.copy-button {
+    position: absolute;
+    bottom: 8px;
+    right: 12px;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    border: 1px solid var(--border-color);
+    background-color: var(--overlay-bg);
+    color: var(--icon-color);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+}
+
+.copy-button:hover:not(:disabled) {
+    background-color: var(--accent-light);
+}
+
+.copied-tooltip {
+    position: absolute;
+    bottom: 40px;
+    right: 12px;
+    background-color: var(--tooltip-bg);
+    color: var(--tooltip-text);
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    animation: fadeInOut 1.5s ease;
+    pointer-events: none;
+}
+
+@keyframes fadeInOut {
+    0% {
+        opacity: 0;
+        transform: translateY(4px);
+    }
+    15% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    85% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+    }
+}

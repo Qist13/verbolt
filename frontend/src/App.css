@@ -1,0 +1,74 @@
+:root {
+    --bg-color: #f4f4f8;
+    --container-bg: white;
+    --text-color: #2d2d2d;
+    --border-color: #e0e0e0;
+    --input-bg: #fafafa;
+    --accent-color: #4f46e5;
+    --accent-hover: #4338ca;
+    --accent-light: #f0f0ff;
+    --muted-text: #888;
+    --shadow-color: rgba(0, 0, 0, 0.08);
+    --overlay-bg: rgba(255, 255, 255, 0.85);
+    --icon-color: #555;
+    --disabled-bg: #a5a5a5;
+    --disabled-text: #ccc;
+    --tooltip-bg: #2d2d2d;
+    --tooltip-text: white;
+}
+
+.dark {
+    --bg-color: #1a1a1f;
+    --container-bg: #26262e;
+    --text-color: #e8e8ec;
+    --border-color: #3a3a44;
+    --input-bg: #2f2f38;
+    --accent-color: #818cf8;
+    --accent-hover: #6366f1;
+    --accent-light: #33334a;
+    --muted-text: #a0a0aa;
+    --shadow-color: rgba(0, 0, 0, 0.3);
+    --overlay-bg: rgba(38, 38, 46, 0.85);
+    --icon-color: #c5c5cc;
+    --disabled-bg: #4a4a52;
+    --disabled-text: #6a6a72;
+    --tooltip-bg: #f0f0f0;
+    --tooltip-text: #1a1a1f;
+}
+
+body {
+    margin: 0;
+    font-family:
+        system-ui,
+        -apple-system,
+        sans-serif;
+    background: linear-gradient(135deg, #eef2ff 0%, #f4f4f8 50%, #fdf4ff 100%);
+    min-height: 100vh;
+}
+
+body.dark {
+    background: linear-gradient(135deg, #16161d 0%, #1a1a1f 50%, #1d1a22 100%);
+}
+
+.app-container {
+    min-height: 100vh;
+    width: 100%;
+    padding: 48px 24px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: transparent;
+}
+
+.app-container h1 {
+    margin: 0 0 32px 0;
+    font-size: 32px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    text-align: center;
+    background: linear-gradient(135deg, var(--accent-color), #a855f7);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
