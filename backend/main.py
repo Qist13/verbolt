@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from deep_translator import GoogleTranslator
 
 app = FastAPI()
@@ -15,7 +15,7 @@ app.add_middleware(
 
 
 class TranslateRequest(BaseModel):
-    text: str
+    text: str = Field(..., max_length=2000)
     source_language: str
     target_language: str
 

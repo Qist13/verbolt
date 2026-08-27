@@ -94,13 +94,19 @@ function App() {
             </div>
 
             <div className="textarea-row">
-                <textarea
-                    className="translator-textarea"
-                    value={inputText}
-                    onChange={(e) => setInputText(e.target.value)}
-                    placeholder="Enter text to translate"
-                    rows={6}
-                />
+                <div className="textarea-wrapper">
+                    <textarea
+                        className="translator-textarea"
+                        value={inputText}
+                        onChange={(e) => setInputText(e.target.value)}
+                        placeholder="Enter text to translate"
+                        rows={6}
+                        maxLength={2000}
+                    />
+                    <div className="char-counter">
+                        {inputText.length} / 2000
+                    </div>
+                </div>
                 <textarea
                     className="translator-textarea"
                     value={translatedText}
