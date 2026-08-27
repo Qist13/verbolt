@@ -26,6 +26,7 @@ def health_check():
 
 @app.post("/translate")
 def translate(request: TranslateRequest):
+    print(request.text, request.target_language)
     result = GoogleTranslator(target=request.target_language).translate(request.text)
 
     return {"translated_text": result}
