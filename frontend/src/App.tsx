@@ -5,8 +5,13 @@ function App() {
     const [inputText, setInputText] = useState("");
     const [targetLanguage, setTargetLanguage] = useState("ja");
     const [translatedText, setTranslatedText] = useState("");
+    const [isLoading, setIsLoading] = useState(false);
+    const [errorMessage, setErrorMessage] = useState("");
 
     const handleTranslate = async () => {
+        setIsLoading(true);
+        setErrorMessage("");
+
         try {
             const response = await axios.post(
                 "http://localhost:8000/translate",
@@ -18,7 +23,10 @@ function App() {
 
             setTranslatedText(response.data.translated_text);
         } catch (error) {
+            setErrorMessage("Failed to translate text. Please try again.");
             console.error("Error translating text:", error);
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -43,7 +51,11 @@ function App() {
                 <option value="de">German</option>
             </select>
 
-            <button onClick={handleTranslate}>Translate</button>
+            <button onClick={handleTranslate} disabled={isLoading}>
+                {isLoading ? "Translating..." : "Translate"}
+            </button>
+
+            {errorMessage && <p style={{ color: "red" }}>{errorMessage}</p>}
 
             {translatedText && (
                 <div>
