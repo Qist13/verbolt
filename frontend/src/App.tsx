@@ -1,5 +1,6 @@
 import axios from "axios";
 import { useState, useEffect } from "react";
+import { Copy } from "lucide-react";
 
 function App() {
     const [inputText, setInputText] = useState("");
@@ -9,6 +10,7 @@ function App() {
     const [isLoading, setIsLoading] = useState(false);
     const [errorMessage, setErrorMessage] = useState("");
     const [languages, setLanguages] = useState<Record<string, string>>({});
+    const [showCopiedMessage, setShowCopiedMessage] = useState(false);
 
     useEffect(() => {
         axios
@@ -51,6 +53,17 @@ function App() {
 
         setInputText(translatedText);
         setTranslatedText(inputText);
+    };
+
+    const handleClearInput = () => {
+        setInputText("");
+        setTranslatedText("");
+    };
+
+    const handleCopyTranslation = () => {
+        navigator.clipboard.writeText(translatedText);
+        setShowCopiedMessage(true);
+        setTimeout(() => setShowCopiedMessage(false), 1500);
     };
 
     return (
@@ -103,17 +116,41 @@ function App() {
                         rows={6}
                         maxLength={2000}
                     />
+                    {inputText && (
+                        <button
+                            className="clear-button"
+                            disabled={isLoading}
+                            onClick={handleClearInput}
+                            aria-label="Clear text"
+                        >
+                            ✕
+                        </button>
+                    )}
                     <div className="char-counter">
                         {inputText.length} / 2000
                     </div>
                 </div>
-                <textarea
-                    className="translator-textarea"
-                    value={translatedText}
-                    readOnly
-                    rows={6}
-                    placeholder="Translation will appear here"
-                />
+                <div className="textarea-wrapper">
+                    <textarea
+                        className="translator-textarea"
+                        value={translatedText}
+                        readOnly
+                        rows={6}
+                        placeholder="Translation will appear here"
+                    />
+                    {translatedText && (
+                        <button
+                            className="copy-button"
+                            onClick={handleCopyTranslation}
+                            aria-label="Copy translation"
+                        >
+                            <Copy size={14} />
+                        </button>
+                    )}
+                    {showCopiedMessage && (
+                        <div className="copied-tooltip">Copied!</div>
+                    )}
+                </div>
             </div>
 
             <button onClick={handleTranslate} disabled={isLoading}>

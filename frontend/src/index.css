@@ -118,7 +118,9 @@ button:disabled {
     padding: 0;
 }
 
-.swap-button:hover:not(:disabled) {
+.swap-button:hover:not(:disabled),
+.clear-button:hover:not(:disabled),
+.copy-button:hover:not(:disabled) {
     background-color: #f0f0ff;
 }
 
@@ -127,10 +129,75 @@ button:disabled {
     cursor: not-allowed;
 }
 
+.clear-button {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: none;
+    background-color: white;
+    color: #555;
+    font-size: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+}
+
+.copy-button {
+    position: absolute;
+    bottom: 8px;
+    right: 12px;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    border: 1px solid #e0e0e0;
+    background-color: rgba(255, 255, 255, 0.85);
+    color: #555;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+}
+
+.copied-tooltip {
+    position: absolute;
+    bottom: 40px;
+    right: 12px;
+    background-color: #2d2d2d;
+    color: white;
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    animation: fadeInOut 1.5s ease;
+    pointer-events: none;
+}
+
 .error-text {
     color: #dc2626;
     text-align: center;
     margin-top: 12px;
+}
+
+@keyframes fadeInOut {
+    0% {
+        opacity: 0;
+        transform: translateY(4px);
+    }
+    15% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    85% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+    }
 }
 
 @media (max-width: 640px) {
