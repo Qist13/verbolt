@@ -16,6 +16,7 @@ app.add_middleware(
 
 class TranslateRequest(BaseModel):
     text: str
+    source_language: str
     target_language: str
 
 
@@ -26,7 +27,15 @@ def health_check():
 
 @app.post("/translate")
 def translate(request: TranslateRequest):
-    print(request.text, request.target_language)
-    result = GoogleTranslator(target=request.target_language).translate(request.text)
+    result = GoogleTranslator(
+        source=request.source_language, target=request.target_language
+    ).translate(request.text)
 
     return {"translated_text": result}
+
+
+@app.get("/languages")
+def get_languages():
+    languages = GoogleTranslator().get_supported_languages(as_dict=True)
+
+    return {"languages": languages}
