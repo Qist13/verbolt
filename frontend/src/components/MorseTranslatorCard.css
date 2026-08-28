@@ -1,0 +1,24 @@
+.morse-mode-select {
+    width: 100%;
+    padding: 10px 12px;
+    font-size: 14px;
+    font-weight: 600;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background-color: var(--input-bg);
+    color: var(--accent-color);
+    cursor: pointer;
+    margin-bottom: 16px;
+}
+
+.morse-textarea-row {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+@media (max-width: 640px) {
+    .morse-textarea-row {
+        flex-direction: column;
+    }
+}

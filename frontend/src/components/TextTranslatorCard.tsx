@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { translateText } from "../api";
+
 import LanguageSelector from "./LanguageSelector";
 import TranslationInput from "./TranslationInput";
 import TranslationOutput from "./TranslationOutput";
 import TranslateButton from "./TranslateButton";
 import ErrorMessage from "./ErrorMessage";
-import "./TranslatorCard.css";
+
+import "./TextTranslatorCard.css";
 
 interface TranslatorCardProps {
     languages: Record<string, string>;
@@ -48,6 +50,7 @@ function TranslatorCard({ languages }: TranslatorCardProps) {
     const handleClearInput = () => {
         setInputText("");
         setTranslatedText("");
+        setErrorMessage("");
     };
 
     return (
