@@ -1,6 +1,6 @@
 import "./ModeToggle.css";
 
-export type TranslationMode = "text" | "morse" | "image" | "voice";
+export type TranslationMode = "text" | "morse" | "image" | "voice" | "video";
 
 interface ModeToggleProps {
     activeMode: TranslationMode;

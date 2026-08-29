@@ -13,6 +13,18 @@ interface ImageTranslatorCardProps {
     languages: Record<string, string>;
 }
 
+const OCR_SUPPORTED_CODES = [
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "pt",
+    "ja",
+    "zh-CN",
+    "ko",
+];
+
 function ImageTranslatorCard({ languages }: ImageTranslatorCardProps) {
     const [selectedImage, setSelectedImage] = useState<File | null>(null);
     const [results, setResults] = useState<ImageTranslationResult[]>([]);
@@ -26,6 +38,12 @@ function ImageTranslatorCard({ languages }: ImageTranslatorCardProps) {
     const [isLoading, setIsLoading] = useState(false);
     const [errorMessage, setErrorMessage] = useState("");
 
+    const sourceLanguages = Object.fromEntries(
+        Object.entries(languages).filter(([, code]) =>
+            OCR_SUPPORTED_CODES.includes(code),
+        ),
+    );
+
     const handleTranslate = async () => {
         if (!selectedImage) {
             setErrorMessage("Please select an image first.");
@@ -34,12 +52,21 @@ function ImageTranslatorCard({ languages }: ImageTranslatorCardProps) {
 
         setIsLoading(true);
         setErrorMessage("");
+        setResults([]);
         try {
             const translationResults = await translateImage(
                 selectedImage,
+                sourceLanguage,
                 targetLanguage,
             );
-            setResults(translationResults);
+
+            if (translationResults.length === 0) {
+                setErrorMessage(
+                    "No translatable text was detected in this image. Try a clearer image or a different source language.",
+                );
+            } else {
+                setResults(translationResults);
+            }
         } catch (error) {
             setErrorMessage("Image translation failed. Please try again.");
             console.error("Image translation failed:", error);
@@ -51,12 +78,14 @@ function ImageTranslatorCard({ languages }: ImageTranslatorCardProps) {
     return (
         <div className="translator-card">
             <LanguageSelector
-                languages={languages}
+                sourceLanguages={sourceLanguages}
+                targetLanguages={languages}
                 sourceLanguage={sourceLanguage}
                 targetLanguage={targetLanguage}
                 onSourceChange={setSourceLanguage}
                 onTargetChange={setTargetLanguage}
                 onSwap={swapLanguages}
+                allowAutoDetect={false}
             />
 
             <ImageUpload onImageSelect={setSelectedImage} />

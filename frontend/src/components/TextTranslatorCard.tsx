@@ -56,7 +56,8 @@ function TranslatorCard({ languages }: TranslatorCardProps) {
     return (
         <div className="translator-card">
             <LanguageSelector
-                languages={languages}
+                sourceLanguages={languages}
+                targetLanguages={languages}
                 sourceLanguage={sourceLanguage}
                 targetLanguage={targetLanguage}
                 onSourceChange={setSourceLanguage}

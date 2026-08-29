@@ -1,4 +1,5 @@
 import { useState } from "react";
+
 import ThemeToggle from "./components/ThemeToggle";
 import ModeToggle from "./components/ModeToggle";
 import type { TranslationMode } from "./components/ModeToggle";
@@ -16,6 +17,24 @@ function App() {
     const { languages } = useLanguages();
     const [activeMode, setActiveMode] = useState<TranslationMode>("text");
 
+    const ocrSupportedCodes = [
+        "en",
+        "es",
+        "fr",
+        "de",
+        "it",
+        "pt",
+        "ja",
+        "ko",
+        "zh-CN",
+    ];
+
+    const imageLanguages = Object.fromEntries(
+        Object.entries(languages).filter(([, code]) =>
+            ocrSupportedCodes.includes(code),
+        ),
+    );
+
     return (
         <div className={`app-container ${isDarkMode ? "dark" : ""}`}>
             <ThemeToggle isDarkMode={isDarkMode} onToggle={toggleDarkMode} />
@@ -26,7 +45,7 @@ function App() {
             )}
             {activeMode === "morse" && <MorseTranslatorCard />}
             {activeMode === "image" && (
-                <ImageTranslatorCard languages={languages} />
+                <ImageTranslatorCard languages={imageLanguages} />
             )}
             {activeMode === "voice" && <p>Voice translation coming soon.</p>}
             {activeMode === "video" && <p>Video translation coming soon.</p>}

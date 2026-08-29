@@ -1,21 +1,25 @@
 import "./LanguageSelector.css";
 
 interface LanguageSelectorProps {
-    languages: Record<string, string>;
+    sourceLanguages: Record<string, string>;
+    targetLanguages: Record<string, string>;
     sourceLanguage: string;
     targetLanguage: string;
     onSourceChange: (value: string) => void;
     onTargetChange: (value: string) => void;
     onSwap: () => void;
+    allowAutoDetect?: boolean;
 }
 
 function LanguageSelector({
-    languages,
+    sourceLanguages,
+    targetLanguages,
     sourceLanguage,
     targetLanguage,
     onSourceChange,
     onTargetChange,
     onSwap,
+    allowAutoDetect = true,
 }: LanguageSelectorProps) {
     return (
         <div className="language-row">
@@ -24,8 +28,8 @@ function LanguageSelector({
                 value={sourceLanguage}
                 onChange={(e) => onSourceChange(e.target.value)}
             >
-                <option value="auto">Auto-detect</option>
-                {Object.entries(languages).map(([name, code]) => (
+                {allowAutoDetect && <option value="auto">Auto-detect</option>}
+                {Object.entries(sourceLanguages).map(([name, code]) => (
                     <option key={code} value={code}>
                         {name[0].toUpperCase() + name.slice(1)}
                     </option>
@@ -35,6 +39,7 @@ function LanguageSelector({
             <button
                 className="swap-button"
                 onClick={onSwap}
+                disabled={sourceLanguage === "auto"}
                 aria-label="Swap languages"
             >
                 ⇄
@@ -45,7 +50,7 @@ function LanguageSelector({
                 value={targetLanguage}
                 onChange={(e) => onTargetChange(e.target.value)}
             >
-                {Object.entries(languages).map(([name, code]) => (
+                {Object.entries(targetLanguages).map(([name, code]) => (
                     <option key={code} value={code}>
                         {name[0].toUpperCase() + name.slice(1)}
                     </option>

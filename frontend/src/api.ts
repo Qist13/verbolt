@@ -40,11 +40,13 @@ export async function fetchLanguages(): Promise<Record<string, string>> {
 
 export async function translateImage(
     imageFile: File,
+    sourceLanguage: string,
     targetLanguage: string,
 ): Promise<ImageTranslationResult[]> {
     const formData = new FormData();
 
     formData.append("file", imageFile);
+    formData.append("source_language", sourceLanguage);
     formData.append("target_language", targetLanguage);
 
     const response = await axios.post<{ results: ImageTranslationResult[] }>(

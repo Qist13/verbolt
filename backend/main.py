@@ -1,4 +1,4 @@
-from fastapi import FastAPI, File, UploadFile
+from fastapi import FastAPI, File, UploadFile, Form
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from deep_translator import GoogleTranslator
@@ -18,7 +18,24 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-ocr_reader = easyocr.Reader(["en"], gpu=False)
+SUPPORTED_OCR_LANGUAGES = {
+    "en": "English",
+    "es": "Spanish",
+    "fr": "French",
+    "de": "German",
+    "it": "Italian",
+    "pt": "Portuguese",
+    "ja": "Japanese",
+    "ko": "Korean",
+}
+
+ocr_reader_latin = easyocr.Reader(["en", "es", "fr", "de", "it", "pt"], gpu=False)
+
+ocr_reader_ja = easyocr.Reader(["ja", "en"], gpu=False)
+
+ocr_reader_zh = easyocr.Reader(["ch_sim", "en"], gpu=False)
+
+ocr_reader_ko = easyocr.Reader(["ko", "en"], gpu=False)
 
 
 class TranslateRequest(BaseModel):
@@ -58,23 +75,37 @@ def get_languages():
     return {"languages": languages}
 
 
-CONFIDENCE_THRESHOLD = 0.5
+CONFIDENCE_THRESHOLD = 0.3
 
 
 @app.post("/translate-image", response_model=ImageTranslateResponse)
 async def translate_image(
     file: UploadFile = File(...),
-    target_language: str = "ja",
+    source_language: str = Form("en"),
+    target_language: str = Form("ja"),
 ):
     image_bytes = await file.read()
     image = Image.open(io.BytesIO(image_bytes))
     image_array = np.array(image)
 
-    ocr_results = ocr_reader.readtext(image_array)
+    if source_language == "ja":
+        reader = ocr_reader_ja
+    elif source_language == "zh-CN":
+        reader = ocr_reader_zh
+    elif source_language == "ko":
+        reader = ocr_reader_ko
+    else:
+        reader = ocr_reader_latin
+
+    ocr_results = reader.readtext(image_array)
 
     results = []
+
+    print(f"OCR found {len(ocr_results)} raw blocks", source_language, target_language)
+
     for bounding_box, text, confidence in ocr_results:
         if confidence < CONFIDENCE_THRESHOLD:
+            print(f"SKIPPED (low confidence {confidence}): {text}")
             continue
 
         try:
@@ -82,8 +113,15 @@ async def translate_image(
                 source="auto", target=target_language
             ).translate(text)
             if translated is None or "Error 500" in translated:
+                print(
+                    f"SKIPPED (bad translation): {text}",
+                    source_language,
+                    target_language,
+                    translated,
+                )
                 continue
-        except Exception:
+        except Exception as e:
+            print(f"SKIPPED (exception {e}): {text}")
             continue
 
         results.append(
