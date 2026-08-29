@@ -4,6 +4,7 @@ import ModeToggle from "./components/ModeToggle";
 import type { TranslationMode } from "./components/ModeToggle";
 import TextTranslatorCard from "./components/TextTranslatorCard";
 import MorseTranslatorCard from "./components/MorseTranslatorCard";
+import ImageTranslatorCard from "./components/ImageTranslatorCard";
 
 import useDarkMode from "./hooks/useDarkMode";
 import useLanguages from "./hooks/useLanguages";
@@ -24,8 +25,11 @@ function App() {
                 <TextTranslatorCard languages={languages} />
             )}
             {activeMode === "morse" && <MorseTranslatorCard />}
-            {activeMode === "image" && <p>Image translation coming soon.</p>}
+            {activeMode === "image" && (
+                <ImageTranslatorCard languages={languages} />
+            )}
             {activeMode === "voice" && <p>Voice translation coming soon.</p>}
+            {activeMode === "video" && <p>Video translation coming soon.</p>}
         </div>
     );
 }

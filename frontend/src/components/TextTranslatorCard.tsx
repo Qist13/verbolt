@@ -7,6 +7,8 @@ import TranslationOutput from "./TranslationOutput";
 import TranslateButton from "./TranslateButton";
 import ErrorMessage from "./ErrorMessage";
 
+import useLanguagePair from "../hooks/useLanguagePair";
+
 import "./TextTranslatorCard.css";
 
 interface TranslatorCardProps {
@@ -15,15 +17,21 @@ interface TranslatorCardProps {
 
 function TranslatorCard({ languages }: TranslatorCardProps) {
     const [inputText, setInputText] = useState("");
-    const [sourceLanguage, setSourceLanguage] = useState("auto");
-    const [targetLanguage, setTargetLanguage] = useState("ja");
     const [translatedText, setTranslatedText] = useState("");
+    const {
+        sourceLanguage,
+        setSourceLanguage,
+        targetLanguage,
+        setTargetLanguage,
+        swapLanguages,
+    } = useLanguagePair();
     const [isLoading, setIsLoading] = useState(false);
     const [errorMessage, setErrorMessage] = useState("");
 
     const handleTranslate = async () => {
         setIsLoading(true);
         setErrorMessage("");
+
         try {
             const result = await translateText(
                 inputText,
@@ -37,14 +45,6 @@ function TranslatorCard({ languages }: TranslatorCardProps) {
         } finally {
             setIsLoading(false);
         }
-    };
-
-    const handleSwapLanguages = () => {
-        const oldSource = sourceLanguage === "auto" ? "en" : sourceLanguage;
-        setSourceLanguage(targetLanguage);
-        setTargetLanguage(oldSource);
-        setInputText(translatedText);
-        setTranslatedText(inputText);
     };
 
     const handleClearInput = () => {
@@ -61,7 +61,7 @@ function TranslatorCard({ languages }: TranslatorCardProps) {
                 targetLanguage={targetLanguage}
                 onSourceChange={setSourceLanguage}
                 onTargetChange={setTargetLanguage}
-                onSwap={handleSwapLanguages}
+                onSwap={swapLanguages}
             />
 
             <div className="textarea-row">

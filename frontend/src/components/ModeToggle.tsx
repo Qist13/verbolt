@@ -10,8 +10,9 @@ interface ModeToggleProps {
 const MODES: { id: TranslationMode; label: string; comingSoon: boolean }[] = [
     { id: "text", label: "Text", comingSoon: false },
     { id: "morse", label: "Morse", comingSoon: false },
-    { id: "image", label: "Image", comingSoon: true },
+    { id: "image", label: "Image", comingSoon: false },
     { id: "voice", label: "Voice", comingSoon: true },
+    { id: "video", label: "Video", comingSoon: true },
 ];
 
 function ModeToggle({ activeMode, onModeChange }: ModeToggleProps) {

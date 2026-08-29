@@ -1,0 +1,30 @@
+.image-dropzone {
+    border: 2px dashed var(--border-color);
+    border-radius: 12px;
+    padding: 40px 20px;
+    text-align: center;
+    cursor: pointer;
+    background-color: var(--input-bg);
+    color: var(--muted-text);
+    margin-bottom: 20px;
+    transition:
+        border-color 0.15s ease,
+        background-color 0.15s ease;
+}
+
+.image-dropzone:hover {
+    border-color: var(--accent-color);
+    background-color: var(--accent-light);
+}
+
+.image-dropzone p {
+    margin: 0;
+    font-size: 14px;
+}
+
+.image-preview {
+    max-width: 100%;
+    max-height: 240px;
+    border-radius: 8px;
+    object-fit: contain;
+}
