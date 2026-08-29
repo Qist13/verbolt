@@ -14,6 +14,21 @@ A full-stack translation web app supporting text, Morse code, and image (OCR) tr
 - Voice translation
 - Video translation
 - Overlaying translated text directly onto uploaded images
+- Support for Sign language
+
+## Showcase
+
+### Text Translation
+
+![Text translation](docs/screenshots/text-translation.png)
+
+### Morse code translation
+
+![Morse code translation](docs/screenshots/morse-decode.png)
+
+### Image translation
+
+![Image translation](docs/screenshots/image-translation.png)
 
 ## Tech Stack
 
