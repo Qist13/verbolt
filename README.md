@@ -1,19 +1,19 @@
 # Verbolt
 
-A full-stack translation web app supporting text, Morse code, and image (OCR) translation.
+A full-stack translation web app for text, Morse code, and images. Upload a photo or screenshot and Verbolt reads the text in it, translates it, and redraws the image with the translation in place. Translation runs on a self-hosted LibreTranslate server, so there are no API keys or rate limits.
 
 ## Features
 
-- Translate text across 100+ languages
+- Translate text between any languages your LibreTranslate server has installed, with auto-detect
 - Encode/decode Morse code
-- Upload an image to detect and translate text within it
+- Translate images: text is detected with OCR (English, Spanish, French, German, Italian, Portuguese, Japanese, Chinese, Korean), then redrawn in the target language in the original position and color
+- Switch between the translated and original image, and download the result
 - Light/dark mode
 
 ## Roadmap
 
 - Voice translation
 - Video translation
-- Overlaying translated text directly onto uploaded images
 - Support for Sign language
 
 ## Showcase
@@ -28,12 +28,16 @@ A full-stack translation web app supporting text, Morse code, and image (OCR) tr
 
 ### Image translation
 
-![Image translation](docs/screenshots/image-translation.png)
+English to Spanish:
+
+| Original | Translated |
+| --- | --- |
+| ![Original image with English fruit names](docs/screenshots/fruits.png) | ![Same image with Spanish fruit names drawn in place](docs/screenshots/fruits-translated.png) |
 
 ## Tech Stack
 
 **Frontend:** React, TypeScript, Vite, Axios
-**Backend:** Python, FastAPI, LibreTranslate, EasyOCR
+**Backend:** Python, FastAPI, LibreTranslate, EasyOCR, OpenCV, Pillow
 
 ## Getting Started
 
