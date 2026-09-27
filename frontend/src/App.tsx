@@ -26,7 +26,8 @@ function App() {
         "pt",
         "ja",
         "ko",
-        "zh-CN",
+        "zh-Hans",
+        "zh",
     ];
 
     const imageLanguages = Object.fromEntries(

@@ -1,12 +1,18 @@
-from fastapi import FastAPI, File, UploadFile, Form
+from fastapi import FastAPI, File, HTTPException, UploadFile, Form
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
-from deep_translator import GoogleTranslator
 import easyocr
 import numpy as np
 from PIL import Image
 import io
-import time
+import os
+import threading
+from functools import lru_cache
+
+import requests
+
+LIBRETRANSLATE_URL = os.getenv("LIBRETRANSLATE_URL", "http://localhost:5000").rstrip("/")
+LIBRETRANSLATE_API_KEY = os.getenv("LIBRETRANSLATE_API_KEY")
 
 app = FastAPI()
 
@@ -29,13 +35,51 @@ SUPPORTED_OCR_LANGUAGES = {
     "ko": "Korean",
 }
 
-ocr_reader_latin = easyocr.Reader(["en", "es", "fr", "de", "it", "pt"], gpu=False)
+# EasyOCR can't mix CJK scripts in one reader (each only pairs with English),
+# so each script gets its own reader. Readers are loaded on first use and cached.
+LATIN_OCR_LANGUAGES = ("en", "es", "fr", "de", "it", "pt")
 
-ocr_reader_ja = easyocr.Reader(["ja", "en"], gpu=False)
+CJK_OCR_LANGUAGES = {
+    "ja": ("ja", "en"),
+    # LibreTranslate uses "zh-Hans" (older versions use "zh")
+    "zh-Hans": ("ch_sim", "en"),
+    "zh": ("ch_sim", "en"),
+    "ko": ("ko", "en"),
+}
 
-ocr_reader_zh = easyocr.Reader(["ch_sim", "en"], gpu=False)
+_ocr_reader_lock = threading.Lock()
 
-ocr_reader_ko = easyocr.Reader(["ko", "en"], gpu=False)
+
+@lru_cache(maxsize=None)
+def _load_ocr_reader(languages: tuple[str, ...]) -> easyocr.Reader:
+    return easyocr.Reader(list(languages), gpu=False)
+
+
+def get_ocr_reader(source_language: str) -> easyocr.Reader:
+    languages = CJK_OCR_LANGUAGES.get(source_language, LATIN_OCR_LANGUAGES)
+    # Lock so concurrent first requests don't load the same model twice
+    with _ocr_reader_lock:
+        return _load_ocr_reader(languages)
+
+
+def libretranslate(texts: list[str], source: str, target: str) -> list[str]:
+    """Translate a batch of strings in one LibreTranslate request."""
+    payload = {"q": texts, "source": source, "target": target, "format": "text"}
+    if LIBRETRANSLATE_API_KEY:
+        payload["api_key"] = LIBRETRANSLATE_API_KEY
+
+    try:
+        response = requests.post(f"{LIBRETRANSLATE_URL}/translate", json=payload, timeout=60)
+    except requests.RequestException as e:
+        print(f"LibreTranslate unreachable at {LIBRETRANSLATE_URL}: {e}")
+        raise HTTPException(status_code=502, detail="Translation service unavailable")
+
+    if not response.ok:
+        error = response.json().get("error", response.text) if response.content else response.reason
+        print(f"LibreTranslate error {response.status_code}: {error}")
+        raise HTTPException(status_code=502, detail=f"Translation failed: {error}")
+
+    return response.json()["translatedText"]
 
 
 class TranslateRequest(BaseModel):
@@ -61,78 +105,65 @@ def health_check():
 
 @app.post("/translate")
 def translate(request: TranslateRequest):
-    result = GoogleTranslator(
-        source=request.source_language, target=request.target_language
-    ).translate(request.text)
+    [result] = libretranslate(
+        [request.text], request.source_language, request.target_language
+    )
 
     return {"translated_text": result}
 
 
 @app.get("/languages")
 def get_languages():
-    languages = GoogleTranslator().get_supported_languages(as_dict=True)
+    try:
+        response = requests.get(f"{LIBRETRANSLATE_URL}/languages", timeout=10)
+        response.raise_for_status()
+    except requests.RequestException as e:
+        print(f"Could not load languages from LibreTranslate: {e}")
+        raise HTTPException(status_code=502, detail="Translation service unavailable")
+
+    languages = {language["name"]: language["code"] for language in response.json()}
 
     return {"languages": languages}
 
 
 CONFIDENCE_THRESHOLD = 0.3
 
-
 @app.post("/translate-image", response_model=ImageTranslateResponse)
-async def translate_image(
+def translate_image(
     file: UploadFile = File(...),
     source_language: str = Form("en"),
     target_language: str = Form("ja"),
 ):
-    image_bytes = await file.read()
-    image = Image.open(io.BytesIO(image_bytes))
+    image_bytes = file.file.read()
+    image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
     image_array = np.array(image)
 
-    if source_language == "ja":
-        reader = ocr_reader_ja
-    elif source_language == "zh-CN":
-        reader = ocr_reader_zh
-    elif source_language == "ko":
-        reader = ocr_reader_ko
-    else:
-        reader = ocr_reader_latin
-
-    ocr_results = reader.readtext(image_array)
-
-    results = []
+    ocr_results = get_ocr_reader(source_language).readtext(image_array)
 
     print(f"OCR found {len(ocr_results)} raw blocks", source_language, target_language)
 
-    for bounding_box, text, confidence in ocr_results:
-        if confidence < CONFIDENCE_THRESHOLD:
+    blocks = []
+    for _, text, confidence in ocr_results:
+        if confidence < CONFIDENCE_THRESHOLD or not text.strip():
             print(f"SKIPPED (low confidence {confidence}): {text}")
             continue
+        blocks.append((text.strip(), confidence))
 
-        try:
-            translated = GoogleTranslator(
-                source="auto", target=target_language
-            ).translate(text)
-            if translated is None or "Error 500" in translated:
-                print(
-                    f"SKIPPED (bad translation): {text}",
-                    source_language,
-                    target_language,
-                    translated,
-                )
-                continue
-        except Exception as e:
-            print(f"SKIPPED (exception {e}): {text}")
-            continue
+    if not blocks:
+        return ImageTranslateResponse(results=[])
 
-        results.append(
-            ImageTranslationResult(
-                original_text=text,
-                translated_text=translated,
-                confidence=confidence,
-            )
+    translations = libretranslate(
+        [text for text, _ in blocks], source_language, target_language
+    )
+
+    results = [
+        ImageTranslationResult(
+            original_text=text,
+            translated_text=translated.strip(),
+            confidence=confidence,
         )
-
-        # small delay between requests
-        time.sleep(0.5)
+        for (text, confidence), translated in zip(blocks, translations)
+        if translated.strip()
+    ]
 
     return ImageTranslateResponse(results=results)

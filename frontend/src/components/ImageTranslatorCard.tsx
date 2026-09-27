@@ -21,7 +21,8 @@ const OCR_SUPPORTED_CODES = [
     "it",
     "pt",
     "ja",
-    "zh-CN",
+    "zh-Hans",
+    "zh",
     "ko",
 ];
 
