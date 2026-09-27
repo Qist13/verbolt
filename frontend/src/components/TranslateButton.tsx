@@ -1,3 +1,4 @@
+import { Languages, LoaderCircle } from "lucide-react";
 import "./TranslateButton.css";
 
 interface TranslateButtonProps {
@@ -7,7 +8,16 @@ interface TranslateButtonProps {
 
 function TranslateButton({ isLoading, onClick }: TranslateButtonProps) {
     return (
-        <button onClick={onClick} disabled={isLoading}>
+        <button
+            className="translate-button"
+            onClick={onClick}
+            disabled={isLoading}
+        >
+            {isLoading ? (
+                <LoaderCircle size={18} className="translate-spinner" />
+            ) : (
+                <Languages size={18} />
+            )}
             {isLoading ? "Translating..." : "Translate"}
         </button>
     );

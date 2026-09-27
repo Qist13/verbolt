@@ -1,3 +1,4 @@
+import { X } from "lucide-react";
 import "./TranslationInput.css";
 
 interface TranslationInputProps {
@@ -32,7 +33,7 @@ function TranslationInput({
                     onClick={onClear}
                     aria-label="Clear text"
                 >
-                    ✕
+                    <X size={16} />
                 </button>
             )}
             <div className="char-counter">

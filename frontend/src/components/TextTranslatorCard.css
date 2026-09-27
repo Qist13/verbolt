@@ -1,15 +1,13 @@
 .translator-card {
     width: 100%;
     max-width: 880px;
-    padding: 40px 44px;
+    padding: 32px;
     background-color: var(--container-bg);
-    border-radius: 20px;
-    box-shadow:
-        0 1px 2px rgba(0, 0, 0, 0.04),
-        0 8px 24px rgba(0, 0, 0, 0.06),
-        0 24px 48px rgba(0, 0, 0, 0.04);
+    border-radius: 24px;
     border: 1px solid var(--border-color);
-    box-sizing: border-box;
+    box-shadow:
+        0 1px 2px var(--shadow-color),
+        0 12px 40px -12px var(--shadow-color);
 }
 
 .textarea-row {
@@ -19,7 +17,13 @@
 }
 
 @media (max-width: 640px) {
+    .translator-card {
+        padding: 20px;
+        border-radius: 20px;
+    }
+
     .textarea-row {
         flex-direction: column;
+        gap: 12px;
     }
 }

@@ -1,3 +1,4 @@
+import { CircleAlert } from "lucide-react";
 import "./ErrorMessage.css";
 
 interface ErrorMessageProps {
@@ -7,7 +8,12 @@ interface ErrorMessageProps {
 function ErrorMessage({ message }: ErrorMessageProps) {
     if (!message) return null;
 
-    return <p className="error-text">{message}</p>;
+    return (
+        <p className="error-text" role="alert">
+            <CircleAlert size={16} />
+            {message}
+        </p>
+    );
 }
 
 export default ErrorMessage;

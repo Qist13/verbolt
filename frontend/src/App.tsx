@@ -38,7 +38,12 @@ function App() {
     return (
         <div className={`app-container ${isDarkMode ? "dark" : ""}`}>
             <ThemeToggle isDarkMode={isDarkMode} onToggle={toggleDarkMode} />
-            <h1>Verbolt</h1>
+            <header className="app-header">
+                <h1 className="app-title">Verbolt</h1>
+                <p className="app-tagline">
+                    Translate text, Morse code, and images in one place.
+                </p>
+            </header>
             <ModeToggle activeMode={activeMode} onModeChange={setActiveMode} />
             {activeMode === "text" && (
                 <TextTranslatorCard languages={languages} />
@@ -47,8 +52,16 @@ function App() {
             {activeMode === "image" && (
                 <ImageTranslatorCard languages={imageLanguages} />
             )}
-            {activeMode === "voice" && <p>Voice translation coming soon.</p>}
-            {activeMode === "video" && <p>Video translation coming soon.</p>}
+            {activeMode === "voice" && (
+                <p className="coming-soon-text">
+                    Voice translation coming soon.
+                </p>
+            )}
+            {activeMode === "video" && (
+                <p className="coming-soon-text">
+                    Video translation coming soon.
+                </p>
+            )}
         </div>
     );
 }

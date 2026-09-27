@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useDropzone } from "react-dropzone";
+import { ImageUp } from "lucide-react";
 
 import "./ImageUpload.css";
 
@@ -23,7 +24,10 @@ function ImageUpload({ onImageSelect }: ImageUploadProps) {
     });
 
     return (
-        <div {...getRootProps()} className="image-dropzone">
+        <div
+            {...getRootProps()}
+            className={`image-dropzone ${isDragActive ? "drag-active" : ""}`}
+        >
             <input {...getInputProps()} />
 
             {previewUrl ? (
@@ -32,10 +36,18 @@ function ImageUpload({ onImageSelect }: ImageUploadProps) {
                     alt="Selected preview"
                     className="image-preview"
                 />
-            ) : isDragActive ? (
-                <p>Drop the image here</p>
             ) : (
-                <p>Drag an image here, or click to select</p>
+                <>
+                    <div className="image-dropzone-icon">
+                        <ImageUp size={24} />
+                    </div>
+                    <p className="image-dropzone-title">
+                        {isDragActive
+                            ? "Drop the image here"
+                            : "Drag an image here, or click to select"}
+                    </p>
+                    <p className="image-dropzone-hint">PNG, JPG, or WebP</p>
+                </>
             )}
         </div>
     );

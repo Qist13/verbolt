@@ -1,3 +1,4 @@
+import { ArrowLeftRight } from "lucide-react";
 import "./LanguageSelector.css";
 
 interface LanguageSelectorProps {
@@ -42,7 +43,7 @@ function LanguageSelector({
                 disabled={sourceLanguage === "auto"}
                 aria-label="Swap languages"
             >
-                ⇄
+                <ArrowLeftRight size={16} />
             </button>
 
             <select
