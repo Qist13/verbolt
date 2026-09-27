@@ -15,3 +15,5 @@ dist/
 # Editor
 .vscode/
 .DS_Store
+# Fonts downloaded at runtime
+backend/fonts/

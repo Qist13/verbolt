@@ -1,7 +1,10 @@
 import { useState } from "react";
 
-function useLanguagePair(initialTarget: string = "ja") {
-    const [sourceLanguage, setSourceLanguage] = useState("auto");
+function useLanguagePair(
+    initialSource: string = "auto",
+    initialTarget: string = "ja",
+) {
+    const [sourceLanguage, setSourceLanguage] = useState(initialSource);
     const [targetLanguage, setTargetLanguage] = useState(initialTarget);
 
     const swapLanguages = () => {

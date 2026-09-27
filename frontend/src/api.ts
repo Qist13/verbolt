@@ -38,21 +38,27 @@ export async function fetchLanguages(): Promise<Record<string, string>> {
     return response.data.languages;
 }
 
+export interface ImageTranslateResponse {
+    results: ImageTranslationResult[];
+    // Data URL of the image with translations drawn in place, if rendering worked
+    translated_image: string | null;
+}
+
 export async function translateImage(
     imageFile: File,
     sourceLanguage: string,
     targetLanguage: string,
-): Promise<ImageTranslationResult[]> {
+): Promise<ImageTranslateResponse> {
     const formData = new FormData();
 
     formData.append("file", imageFile);
     formData.append("source_language", sourceLanguage);
     formData.append("target_language", targetLanguage);
 
-    const response = await axios.post<{ results: ImageTranslationResult[] }>(
+    const response = await axios.post<ImageTranslateResponse>(
         `${API_BASE_URL}/translate-image`,
         formData,
     );
 
-    return response.data.results;
+    return response.data;
 }

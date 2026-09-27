@@ -3,13 +3,16 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 import easyocr
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageOps
+import base64
 import io
 import os
 import threading
 from functools import lru_cache
 
 import requests
+
+from image_render import render_translated_image
 
 LIBRETRANSLATE_URL = os.getenv("LIBRETRANSLATE_URL", "http://localhost:5000").rstrip("/")
 LIBRETRANSLATE_API_KEY = os.getenv("LIBRETRANSLATE_API_KEY")
@@ -96,6 +99,8 @@ class ImageTranslationResult(BaseModel):
 
 class ImageTranslateResponse(BaseModel):
     results: list[ImageTranslationResult]
+    # The image with translations drawn in place, as a data URL
+    translated_image: str | None = None
 
 
 @app.get("/")
@@ -128,6 +133,16 @@ def get_languages():
 
 CONFIDENCE_THRESHOLD = 0.3
 
+
+def encode_image(image: Image.Image, original_format: str | None) -> str:
+    # Keep PNGs lossless (screenshots, graphics); send photos as JPEG to stay small
+    image_format = "PNG" if original_format == "PNG" else "JPEG"
+    buffer = io.BytesIO()
+    image.save(buffer, format=image_format, quality=90)
+    encoded = base64.b64encode(buffer.getvalue()).decode()
+    return f"data:image/{image_format.lower()};base64,{encoded}"
+
+
 @app.post("/translate-image", response_model=ImageTranslateResponse)
 def translate_image(
     file: UploadFile = File(...),
@@ -135,7 +150,10 @@ def translate_image(
     target_language: str = Form("ja"),
 ):
     image_bytes = file.file.read()
-    image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
+    image = Image.open(io.BytesIO(image_bytes))
+    original_format = image.format
+    # Phone photos are often stored sideways with an EXIF rotation flag
+    image = ImageOps.exif_transpose(image).convert("RGB")
     image_array = np.array(image)
 
     ocr_results = get_ocr_reader(source_language).readtext(image_array)
@@ -143,27 +161,44 @@ def translate_image(
     print(f"OCR found {len(ocr_results)} raw blocks", source_language, target_language)
 
     blocks = []
-    for _, text, confidence in ocr_results:
+    for bounding_box, text, confidence in ocr_results:
         if confidence < CONFIDENCE_THRESHOLD or not text.strip():
             print(f"SKIPPED (low confidence {confidence}): {text}")
             continue
-        blocks.append((text.strip(), confidence))
+        blocks.append((bounding_box, text.strip(), confidence))
 
     if not blocks:
         return ImageTranslateResponse(results=[])
 
     translations = libretranslate(
-        [text for text, _ in blocks], source_language, target_language
+        [text for _, text, _ in blocks], source_language, target_language
     )
+
+    translated_blocks = [
+        (bounding_box, text, confidence, translated.strip())
+        for (bounding_box, text, confidence), translated in zip(blocks, translations)
+        if translated.strip()
+    ]
 
     results = [
         ImageTranslationResult(
             original_text=text,
-            translated_text=translated.strip(),
+            translated_text=translated,
             confidence=confidence,
         )
-        for (text, confidence), translated in zip(blocks, translations)
-        if translated.strip()
+        for _, text, confidence, translated in translated_blocks
     ]
 
-    return ImageTranslateResponse(results=results)
+    # The text results are still useful if drawing the image fails
+    try:
+        rendered = render_translated_image(
+            image_array,
+            [(bounding_box, translated) for bounding_box, _, _, translated in translated_blocks],
+            target_language,
+        )
+        translated_image = encode_image(rendered, original_format)
+    except Exception as e:
+        print(f"Could not render translated image: {e}")
+        translated_image = None
+
+    return ImageTranslateResponse(results=results, translated_image=translated_image)
