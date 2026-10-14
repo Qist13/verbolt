@@ -1,0 +1,212 @@
+.speech-media {
+    margin-bottom: 20px;
+}
+
+.speech-media .file-chip {
+    margin-bottom: 12px;
+}
+
+.speech-player {
+    display: block;
+    width: 100%;
+}
+
+.speech-player-video {
+    max-height: 420px;
+    border-radius: 14px;
+    background-color: black;
+}
+
+.speech-input-options {
+    margin-bottom: 20px;
+}
+
+.speech-dropzone {
+    margin-bottom: 0;
+}
+
+.speech-divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 14px 0;
+    font-size: 13px;
+    color: var(--muted-text);
+}
+
+.speech-divider::before,
+.speech-divider::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background-color: var(--border-color);
+}
+
+.speech-record-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 12px;
+    font-size: 15px;
+    font-weight: 600;
+    font-family: inherit;
+    color: var(--accent-color);
+    background-color: var(--accent-light);
+    border: 1px solid transparent;
+    border-radius: 14px;
+    cursor: pointer;
+    transition: border-color 0.15s ease;
+}
+
+.speech-record-button:hover {
+    border-color: var(--accent-color);
+}
+
+.speech-recording {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+    padding: 20px;
+    border-radius: 16px;
+    background-color: var(--error-bg);
+    border: 1px solid var(--error-color);
+}
+
+.speech-recording-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: var(--error-color);
+    animation: recording-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes recording-pulse {
+    50% {
+        opacity: 0.3;
+    }
+}
+
+.speech-recording-time {
+    flex: 1;
+    font-size: 15px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    color: var(--error-color);
+}
+
+.speech-stop-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: inherit;
+    color: white;
+    background-color: var(--error-color);
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+.speech-stop-button:hover {
+    filter: brightness(1.08);
+}
+
+.speech-results-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 12px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--muted-text);
+}
+
+.speech-results-header strong {
+    color: var(--accent-color);
+}
+
+.speech-results-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.speech-segments {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 480px;
+    margin: 0;
+    padding: 0;
+    overflow-y: auto;
+    list-style: none;
+}
+
+.speech-segment {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 12px 16px;
+    background-color: var(--input-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    transition:
+        border-color 0.15s ease,
+        background-color 0.15s ease;
+}
+
+.speech-segment.active {
+    border-color: var(--accent-color);
+    background-color: var(--accent-light);
+}
+
+.speech-segment-time {
+    flex-shrink: 0;
+    min-width: 52px;
+    padding: 3px 8px;
+    font-size: 12px;
+    font-weight: 600;
+    font-family: inherit;
+    font-variant-numeric: tabular-nums;
+    color: var(--accent-color);
+    background-color: var(--container-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 999px;
+    cursor: pointer;
+}
+
+.speech-segment-time:hover {
+    border-color: var(--accent-color);
+}
+
+.speech-segment-text {
+    flex: 1;
+    min-width: 0;
+}
+
+.speech-segment-original {
+    margin: 0 0 4px;
+    font-size: 13px;
+    line-height: 1.45;
+    color: var(--muted-text);
+}
+
+.speech-segment-translated {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.45;
+    color: var(--text-color);
+}
+
+.speech-new-button {
+    display: block;
+    width: 100%;
+    margin-top: 12px;
+}

@@ -6,3 +6,6 @@ python-multipart
 numpy
 pillow
 opencv-python-headless
+faster-whisper
+# PyAV 18+ dropped an argument faster-whisper 1.2 still passes
+av<18

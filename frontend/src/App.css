@@ -122,11 +122,6 @@ body {
     color: var(--muted-text);
 }
 
-.coming-soon-text {
-    color: var(--muted-text);
-    margin-top: 24px;
-}
-
 /* Shared by TranslationInput and TranslationOutput */
 .textarea-wrapper {
     position: relative;

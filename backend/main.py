@@ -15,6 +15,7 @@ from urllib.parse import quote, urlsplit
 import requests
 
 from image_render import render_translated_image
+from speech import to_whisper_language, transcribe
 
 LIBRETRANSLATE_URL = os.getenv("LIBRETRANSLATE_URL", "http://localhost:5000").rstrip("/")
 LIBRETRANSLATE_API_KEY = os.getenv("LIBRETRANSLATE_API_KEY")
@@ -32,6 +33,7 @@ MAX_IMAGE_BYTES = 10 * 1024 * 1024
 MAX_IMAGE_PIXELS = 40_000_000
 
 MAX_DOCUMENT_BYTES = 20 * 1024 * 1024
+MAX_MEDIA_BYTES = 200 * 1024 * 1024
 # Formats LibreTranslate can translate while keeping the file's layout
 SUPPORTED_DOCUMENT_EXTENSIONS = {
     ".txt", ".odt", ".odp", ".docx", ".pptx", ".epub", ".html", ".srt", ".pdf",
@@ -139,8 +141,8 @@ def translate(request: TranslateRequest):
     }
 
 
-@app.get("/languages")
-def get_languages():
+def fetch_languages() -> dict[str, str]:
+    """Language names to codes for every language LibreTranslate has installed."""
     try:
         response = requests.get(f"{LIBRETRANSLATE_URL}/languages", timeout=10)
         response.raise_for_status()
@@ -148,9 +150,12 @@ def get_languages():
         print(f"Could not load languages from LibreTranslate: {e}")
         raise HTTPException(status_code=502, detail="Translation service unavailable")
 
-    languages = {language["name"]: language["code"] for language in response.json()}
+    return {language["name"]: language["code"] for language in response.json()}
 
-    return {"languages": languages}
+
+@app.get("/languages")
+def get_languages():
+    return {"languages": fetch_languages()}
 
 
 CONFIDENCE_THRESHOLD = 0.3
@@ -289,4 +294,77 @@ def translate_file(
             # filename* keeps non-ASCII names intact
             "Content-Disposition": f"attachment; filename*=UTF-8''{quote(translated_name)}",
         },
+    )
+
+
+class SpeechSegment(BaseModel):
+    start: float
+    end: float
+    text: str
+    translated_text: str
+
+
+class SpeechTranslateResponse(BaseModel):
+    # LibreTranslate code of the spoken language
+    detected_language: str
+    duration: float
+    segments: list[SpeechSegment]
+
+
+@app.post("/translate-speech", response_model=SpeechTranslateResponse)
+def translate_speech(
+    file: UploadFile = File(...),
+    source_language: str = Form("auto"),
+    target_language: str = Form("en"),
+):
+    if file.size is not None and file.size > MAX_MEDIA_BYTES:
+        raise HTTPException(status_code=413, detail="File is too large (max 200 MB)")
+
+    whisper_language = None
+    if source_language != "auto":
+        whisper_language = to_whisper_language(source_language)
+        if whisper_language is None:
+            raise HTTPException(
+                status_code=400,
+                detail="Speech recognition doesn't support that source language",
+            )
+
+    try:
+        # The upload is already spooled to disk, so pass the file straight through
+        segments, spoken_language, duration = transcribe(file.file, whisper_language)
+    except ValueError as e:
+        print(f"Could not read audio: {e}")
+        raise HTTPException(status_code=400, detail="Couldn't find any audio in that file")
+
+    if source_language == "auto":
+        # Map Whisper's code back to the one LibreTranslate uses
+        installed = set(fetch_languages().values())
+        source_language = next(
+            (code for code in installed if to_whisper_language(code) == spoken_language),
+            None,
+        )
+        if source_language is None:
+            raise HTTPException(
+                status_code=400,
+                detail=f"The speech seems to be in a language ({spoken_language}) the translation server doesn't have installed",
+            )
+
+    if not segments:
+        return SpeechTranslateResponse(
+            detected_language=source_language, duration=duration, segments=[]
+        )
+
+    texts = [text for _, _, text in segments]
+    if source_language == target_language:
+        translations = texts
+    else:
+        translations = libretranslate(texts, source_language, target_language)["translatedText"]
+
+    return SpeechTranslateResponse(
+        detected_language=source_language,
+        duration=duration,
+        segments=[
+            SpeechSegment(start=start, end=end, text=text, translated_text=translated.strip())
+            for (start, end, text), translated in zip(segments, translations)
+        ],
     )

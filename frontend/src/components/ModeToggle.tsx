@@ -1,20 +1,18 @@
 import "./ModeToggle.css";
 
-export type TranslationMode =
-    "text" | "morse" | "image" | "file" | "voice" | "video";
+export type TranslationMode = "text" | "morse" | "image" | "file" | "speech";
 
 interface ModeToggleProps {
     activeMode: TranslationMode;
     onModeChange: (mode: TranslationMode) => void;
 }
 
-const MODES: { id: TranslationMode; label: string; comingSoon: boolean }[] = [
-    { id: "text", label: "Text", comingSoon: false },
-    { id: "morse", label: "Morse", comingSoon: false },
-    { id: "image", label: "Image", comingSoon: false },
-    { id: "file", label: "File", comingSoon: false },
-    { id: "voice", label: "Voice", comingSoon: true },
-    { id: "video", label: "Video", comingSoon: true },
+const MODES: { id: TranslationMode; label: string }[] = [
+    { id: "text", label: "Text" },
+    { id: "morse", label: "Morse" },
+    { id: "image", label: "Image" },
+    { id: "file", label: "File" },
+    { id: "speech", label: "Audio & Video" },
 ];
 
 function ModeToggle({ activeMode, onModeChange }: ModeToggleProps) {
@@ -24,13 +22,9 @@ function ModeToggle({ activeMode, onModeChange }: ModeToggleProps) {
                 <button
                     key={mode.id}
                     className={`mode-button ${activeMode === mode.id ? "active" : ""}`}
-                    onClick={() => !mode.comingSoon && onModeChange(mode.id)}
-                    disabled={mode.comingSoon}
+                    onClick={() => onModeChange(mode.id)}
                 >
                     {mode.label}
-                    {mode.comingSoon && (
-                        <span className="coming-soon-badge">Soon</span>
-                    )}
                 </button>
             ))}
         </div>

@@ -110,3 +110,36 @@ export async function translateFile(
         throw error;
     }
 }
+
+export interface SpeechSegment {
+    start: number;
+    end: number;
+    text: string;
+    translated_text: string;
+}
+
+export interface SpeechTranslateResponse {
+    detected_language: string;
+    duration: number;
+    segments: SpeechSegment[];
+}
+
+/** Transcribes the speech in an audio or video file and translates it. */
+export async function translateSpeech(
+    mediaFile: File,
+    sourceLanguage: string,
+    targetLanguage: string,
+): Promise<SpeechTranslateResponse> {
+    const formData = new FormData();
+
+    formData.append("file", mediaFile);
+    formData.append("source_language", sourceLanguage);
+    formData.append("target_language", targetLanguage);
+
+    const response = await axios.post<SpeechTranslateResponse>(
+        `${API_BASE_URL}/translate-speech`,
+        formData,
+    );
+
+    return response.data;
+}

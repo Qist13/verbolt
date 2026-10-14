@@ -5,6 +5,7 @@ import TextTranslatorCard from "./components/TextTranslatorCard";
 import MorseTranslatorCard from "./components/MorseTranslatorCard";
 import ImageTranslatorCard from "./components/ImageTranslatorCard";
 import FileTranslatorCard from "./components/FileTranslatorCard";
+import SpeechTranslatorCard from "./components/SpeechTranslatorCard";
 import ServiceBanner from "./components/ServiceBanner";
 
 import useDarkMode from "./hooks/useDarkMode";
@@ -27,8 +28,8 @@ function App() {
             <header className="app-header">
                 <h1 className="app-title">Verbolt</h1>
                 <p className="app-tagline">
-                    Translate text, Morse code, images, and documents in one
-                    place.
+                    Translate text, Morse code, images, documents, and speech in
+                    one place.
                 </p>
             </header>
             <ModeToggle activeMode={activeMode} onModeChange={setActiveMode} />
@@ -45,6 +46,9 @@ function App() {
             )}
             {activeMode === "file" && (
                 <FileTranslatorCard languages={languages} />
+            )}
+            {activeMode === "speech" && (
+                <SpeechTranslatorCard languages={languages} />
             )}
         </div>
     );

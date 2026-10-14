@@ -1,6 +1,6 @@
 # Verbolt
 
-A full-stack translation web app for text, Morse code, images, and documents. Type or paste text, snap a photo of a sign, or drop in a Word or PDF file, and get it back in another language. Images are redrawn with the translation in place, and documents come back in the same format with their formatting kept. Translation runs on a self-hosted LibreTranslate server, so there are no API keys or rate limits.
+A full-stack translation web app for text, Morse code, images, documents, and speech. Type or paste text, snap a photo of a sign, drop in a Word or PDF file, or upload a video, and get it back in another language. Images are redrawn with the translation in place, and documents come back in the same format with their formatting kept. Translation runs on a self-hosted LibreTranslate server, so there are no API keys or rate limits.
 
 ![Text translation with the detected language shown](docs/screenshots/text-translation.png)
 
@@ -31,6 +31,14 @@ A full-stack translation web app for text, Morse code, images, and documents. Ty
 - Upload a document and download the same file translated, with its formatting kept
 - Supports Word (.docx), PowerPoint (.pptx), PDF, plain text, OpenDocument (.odt, .odp), EPUB, HTML, and subtitles (.srt), up to 20 MB
 
+### Audio & video
+
+- Upload an audio or video file, or record from your microphone, and get a timestamped transcript with a translation of each line
+- Speech is transcribed locally with Whisper, which also detects the spoken language
+- Click a timestamp to jump to that moment in the player; the line being played is highlighted
+- Copy the translation, or download it as subtitles (.srt) to load alongside the video
+- Supports MP3, WAV, M4A, MP4, MOV, WebM, and most other formats, up to 200 MB
+
 ### Everywhere
 
 - Light and dark mode that follows your system
@@ -57,16 +65,20 @@ English to Spanish:
 
 ![File mode with a Word document translated to Spanish, ready to download](docs/screenshots/file-translation.png)
 
+### Audio & video translation
+
+![Audio & Video mode with a transcribed and translated video clip](docs/screenshots/speech-translation.png)
+
 ## Roadmap
 
-- Voice translation
-- Video translation
+- Read translations aloud
+- Burn translated subtitles into videos
 - Support for sign language
 
 ## Tech Stack
 
 **Frontend:** React, TypeScript, Vite, Axios, react-dropzone, Lucide icons
-**Backend:** Python, FastAPI, LibreTranslate, EasyOCR, OpenCV, Pillow
+**Backend:** Python, FastAPI, LibreTranslate, EasyOCR, faster-whisper, OpenCV, Pillow
 
 ## Getting Started
 
@@ -94,7 +106,7 @@ pip install -r requirements.txt
 uvicorn main:app --reload
 ```
 
-The API runs at `http://localhost:8000`. OCR models and fonts for image translation download the first time each language is used, so that first request is slow.
+The API runs at `http://localhost:8000`. Models download the first time they're needed, so those first requests are slow: OCR models and fonts for each image language, and the Whisper speech model (about 500 MB) for audio and video.
 
 ### Frontend
 
@@ -113,6 +125,7 @@ Open the URL Vite prints (usually `http://localhost:5173`). If the app shows "Tr
 | `LIBRETRANSLATE_URL` | backend | `http://localhost:5000` |
 | `LIBRETRANSLATE_API_KEY` | backend | none |
 | `ALLOWED_ORIGINS` | backend, comma-separated frontend origins | any `localhost` port |
+| `WHISPER_MODEL` | backend: `base` is faster, `medium` more accurate | `small` |
 | `VITE_API_URL` | frontend (`frontend/.env`) | `http://localhost:8000` |
 
 ## API
@@ -123,3 +136,4 @@ Open the URL Vite prints (usually `http://localhost:5173`). If the app shows "Tr
 | `POST /translate` | Translate text (JSON: `text`, `source_language`, `target_language`); returns the translation and the detected language when the source is `auto` |
 | `POST /translate-image` | Translate the text in an image (form data: `file`, `source_language`, `target_language`); returns each text block and the redrawn image |
 | `POST /translate-file` | Translate a document (form data: `file`, `source_language`, `target_language`); returns the translated file |
+| `POST /translate-speech` | Transcribe and translate an audio or video file (form data: `file`, `source_language`, `target_language`); returns timestamped segments and the detected language |
