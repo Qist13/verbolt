@@ -1,0 +1,121 @@
+.file-chip {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 20px;
+    padding: 16px;
+    background-color: var(--input-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+}
+
+.file-chip-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    background-color: var(--accent-light);
+    color: var(--accent-color);
+}
+
+.file-chip-text {
+    flex: 1;
+    min-width: 0;
+}
+
+.file-chip-name {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.file-chip-size {
+    margin: 2px 0 0;
+    font-size: 13px;
+    color: var(--muted-text);
+}
+
+.file-chip-remove {
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    border: none;
+    background-color: transparent;
+    color: var(--icon-color);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    transition: background-color 0.15s ease;
+}
+
+.file-chip-remove:hover:not(:disabled) {
+    background-color: var(--accent-light);
+    color: var(--accent-color);
+}
+
+.file-chip-remove:disabled {
+    color: var(--disabled-text);
+    cursor: not-allowed;
+}
+
+.file-result {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.file-download-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 14px;
+    font-size: 16px;
+    font-weight: 600;
+    color: white;
+    text-decoration: none;
+    background: linear-gradient(135deg, var(--button-from), var(--button-to));
+    border-radius: 14px;
+    box-shadow: 0 8px 20px -8px var(--button-from);
+    overflow-wrap: anywhere;
+    transition:
+        transform 0.15s ease,
+        filter 0.15s ease;
+}
+
+.file-download-button:hover {
+    transform: translateY(-1px);
+    filter: brightness(1.06);
+}
+
+.file-secondary-button {
+    padding: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: inherit;
+    color: var(--accent-color);
+    background: none;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+.file-secondary-button:hover {
+    background-color: var(--accent-light);
+}
+
+.file-loading-hint {
+    margin: 12px 0 0;
+    font-size: 13px;
+    text-align: center;
+    color: var(--muted-text);
+}

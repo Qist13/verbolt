@@ -1,4 +1,5 @@
 from fastapi import FastAPI, File, HTTPException, UploadFile, Form
+from fastapi.responses import Response
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 import easyocr
@@ -9,6 +10,7 @@ import io
 import os
 import threading
 from functools import lru_cache
+from urllib.parse import quote, urlsplit
 
 import requests
 
@@ -28,6 +30,12 @@ LOCALHOST_ORIGIN_REGEX = r"http://(localhost|127\.0\.0\.1)(:\d+)?"
 MAX_IMAGE_BYTES = 10 * 1024 * 1024
 # Very large images make OCR slow without improving accuracy
 MAX_IMAGE_PIXELS = 40_000_000
+
+MAX_DOCUMENT_BYTES = 20 * 1024 * 1024
+# Formats LibreTranslate can translate while keeping the file's layout
+SUPPORTED_DOCUMENT_EXTENSIONS = {
+    ".txt", ".odt", ".odp", ".docx", ".pptx", ".epub", ".html", ".srt", ".pdf",
+}
 
 app = FastAPI()
 
@@ -226,3 +234,59 @@ def translate_image(
         translated_image = None
 
     return ImageTranslateResponse(results=results, translated_image=translated_image)
+
+
+@app.post("/translate-file")
+def translate_file(
+    file: UploadFile = File(...),
+    source_language: str = Form("auto"),
+    target_language: str = Form("en"),
+):
+    filename = os.path.basename(file.filename or "")
+    stem, extension = os.path.splitext(filename)
+    extension = extension.lower()
+    if extension not in SUPPORTED_DOCUMENT_EXTENSIONS:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unsupported file type. Use one of: {', '.join(sorted(SUPPORTED_DOCUMENT_EXTENSIONS))}",
+        )
+
+    file_bytes = file.file.read(MAX_DOCUMENT_BYTES + 1)
+    if len(file_bytes) > MAX_DOCUMENT_BYTES:
+        raise HTTPException(status_code=413, detail="File is too large (max 20 MB)")
+
+    data = {"source": source_language, "target": target_language}
+    if LIBRETRANSLATE_API_KEY:
+        data["api_key"] = LIBRETRANSLATE_API_KEY
+
+    try:
+        # Large documents are translated paragraph by paragraph and can take minutes
+        response = requests.post(
+            f"{LIBRETRANSLATE_URL}/translate_file",
+            files={"file": (filename, file_bytes, file.content_type)},
+            data=data,
+            timeout=600,
+        )
+        if not response.ok:
+            error = response.json().get("error", response.text) if response.content else response.reason
+            print(f"LibreTranslate file error {response.status_code}: {error}")
+            raise HTTPException(status_code=502, detail=f"Translation failed: {error}")
+
+        # LibreTranslate links to the result using its own idea of its hostname,
+        # which may not be reachable from here, so only keep the path
+        download_path = urlsplit(response.json()["translatedFileUrl"]).path
+        download = requests.get(f"{LIBRETRANSLATE_URL}{download_path}", timeout=60)
+        download.raise_for_status()
+    except requests.RequestException as e:
+        print(f"File translation via LibreTranslate failed: {e}")
+        raise HTTPException(status_code=502, detail="Translation service unavailable")
+
+    translated_name = f"{stem}_{target_language}{extension}"
+    return Response(
+        content=download.content,
+        media_type=download.headers.get("Content-Type", "application/octet-stream"),
+        headers={
+            # filename* keeps non-ASCII names intact
+            "Content-Disposition": f"attachment; filename*=UTF-8''{quote(translated_name)}",
+        },
+    )

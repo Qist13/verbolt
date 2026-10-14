@@ -1,12 +1,13 @@
 # Verbolt
 
-A full-stack translation web app for text, Morse code, and images. Upload a photo or screenshot and Verbolt reads the text in it, translates it, and redraws the image with the translation in place. Translation runs on a self-hosted LibreTranslate server, so there are no API keys or rate limits.
+A full-stack translation web app for text, Morse code, images, and documents. Upload a photo or screenshot and Verbolt reads the text in it, translates it, and redraws the image with the translation in place. Translation runs on a self-hosted LibreTranslate server, so there are no API keys or rate limits.
 
 ## Features
 
 - Translate text between any languages your LibreTranslate server has installed, with auto-detect that shows the detected language
 - Encode/decode Morse code live as you type, and play it back as audio
 - Translate images: text is detected with OCR (English, Spanish, French, German, Italian, Portuguese, Japanese, Chinese, Korean), then redrawn in the target language in the original position and color
+- Translate documents and get the same file back in the target language, with its formatting kept: Word (.docx), PowerPoint (.pptx), PDF, plain text, OpenDocument (.odt, .odp), EPUB, HTML, and subtitles (.srt)
 - Drop, pick, or paste (Ctrl/Cmd+V) an image; switch between the translated and original image, and download the result
 - Light/dark mode that follows your system, and remembers your languages and mode between visits
 

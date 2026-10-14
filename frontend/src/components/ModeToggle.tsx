@@ -1,6 +1,7 @@
 import "./ModeToggle.css";
 
-export type TranslationMode = "text" | "morse" | "image" | "voice" | "video";
+export type TranslationMode =
+    "text" | "morse" | "image" | "file" | "voice" | "video";
 
 interface ModeToggleProps {
     activeMode: TranslationMode;
@@ -11,6 +12,7 @@ const MODES: { id: TranslationMode; label: string; comingSoon: boolean }[] = [
     { id: "text", label: "Text", comingSoon: false },
     { id: "morse", label: "Morse", comingSoon: false },
     { id: "image", label: "Image", comingSoon: false },
+    { id: "file", label: "File", comingSoon: false },
     { id: "voice", label: "Voice", comingSoon: true },
     { id: "video", label: "Video", comingSoon: true },
 ];

@@ -76,3 +76,37 @@ export async function translateImage(
 
     return response.data;
 }
+
+/** Translates a document, returning the translated file in the same format. */
+export async function translateFile(
+    file: File,
+    sourceLanguage: string,
+    targetLanguage: string,
+): Promise<Blob> {
+    const formData = new FormData();
+
+    formData.append("file", file);
+    formData.append("source_language", sourceLanguage);
+    formData.append("target_language", targetLanguage);
+
+    try {
+        const response = await axios.post<Blob>(
+            `${API_BASE_URL}/translate-file`,
+            formData,
+            { responseType: "blob" },
+        );
+        return response.data;
+    } catch (error) {
+        // Errors come back as a Blob too; parse them so getErrorMessage can read the detail
+        if (axios.isAxiosError(error) && error.response?.data instanceof Blob) {
+            try {
+                error.response.data = JSON.parse(
+                    await error.response.data.text(),
+                );
+            } catch {
+                // Not JSON: leave it for the generic message
+            }
+        }
+        throw error;
+    }
+}
