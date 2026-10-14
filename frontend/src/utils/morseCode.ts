@@ -35,6 +35,24 @@ const MORSE_CODE_MAP: Record<string, string> = {
     "7": "--...",
     "8": "---..",
     "9": "----.",
+    ".": ".-.-.-",
+    ",": "--..--",
+    "?": "..--..",
+    "'": ".----.",
+    "!": "-.-.--",
+    "/": "-..-.",
+    "(": "-.--.",
+    ")": "-.--.-",
+    "&": ".-...",
+    ":": "---...",
+    ";": "-.-.-.",
+    "=": "-...-",
+    "+": ".-.-.",
+    "-": "-....-",
+    _: "..--.-",
+    '"': ".-..-.",
+    $: "...-..-",
+    "@": ".--.-.",
 };
 
 const DECODE_MORSE_MAP: Record<string, string> = Object.fromEntries(
@@ -42,27 +60,45 @@ const DECODE_MORSE_MAP: Record<string, string> = Object.fromEntries(
 );
 
 export function encodeToMorse(text: string): string {
-    return text
-        .toUpperCase()
-        .split("")
-        .map((char) => {
+    return (
+        text
+            .trim()
+            .toUpperCase()
+            .split(/\s+/)
+            .filter(Boolean)
+            .map((word) =>
+                word
+                    .split("")
+                    // characters that don't have a Morse code representation are set to '?'
+                    .map((char) => MORSE_CODE_MAP[char] ?? "?")
+                    .join(" "),
+            )
             // '/' separates words in Morse
-            if (char === " ") return "/";
-
-            // characters that don't have a Morse code representation is set to '?'
-            return MORSE_CODE_MAP[char] ?? "?";
-        })
-        .join(" ");
+            .join(" / ")
+    );
 }
 
 export function decodeFromMorse(morse: string): string {
-    return morse
-        .trim()
-        .split(" ")
-        .map((code) => {
-            if (code === "/") return " ";
+    return (
+        morse
+            // Accept the look-alike characters people paste in
+            .replace(/[•·∙]/g, ".")
+            .replace(/[_−–—]/g, "-")
+            .trim()
+            // Words are separated by '/' or '|', letters by whitespace
+            .split(/\s*[/|]\s*|\n+/)
+            .filter(Boolean)
+            .map((word) =>
+                word
+                    .split(/\s+/)
+                    .map((code) => DECODE_MORSE_MAP[code] ?? "?")
+                    .join(""),
+            )
+            .join(" ")
+    );
+}
 
-            return DECODE_MORSE_MAP[code] ?? "?";
-        })
-        .join("");
+/** True if the text only contains Morse symbols, so it's probably meant to be decoded. */
+export function looksLikeMorse(text: string): boolean {
+    return /^[\s.\-/|•·∙_−–—]+$/.test(text) && /[.\-•·∙_−–—]/.test(text);
 }
