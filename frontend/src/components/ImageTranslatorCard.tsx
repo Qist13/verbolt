@@ -1,6 +1,6 @@
-import { useState } from "react";
-import { Download } from "lucide-react";
-import { translateImage } from "../api";
+import { useCallback, useEffect, useState } from "react";
+import { Check, Copy, Download } from "lucide-react";
+import { getErrorMessage, translateImage } from "../api";
 import type { ImageTranslationResult } from "../api";
 import LanguageSelector from "./LanguageSelector";
 import ImageUpload from "./ImageUpload";
@@ -14,7 +14,8 @@ interface ImageTranslatorCardProps {
     languages: Record<string, string>;
 }
 
-const OCR_SUPPORTED_CODES = [
+// Languages the backend can read with OCR and draw with its fonts
+const IMAGE_LANGUAGE_CODES = [
     "en",
     "es",
     "fr",
@@ -26,6 +27,9 @@ const OCR_SUPPORTED_CODES = [
     "zh",
     "ko",
 ];
+
+// After this long, explain why the request is slow
+const SLOW_REQUEST_MS = 6000;
 
 function ImageTranslatorCard({ languages }: ImageTranslatorCardProps) {
     const [selectedImage, setSelectedImage] = useState<File | null>(null);
@@ -41,23 +45,41 @@ function ImageTranslatorCard({ languages }: ImageTranslatorCardProps) {
         targetLanguage,
         setTargetLanguage,
         swapLanguages,
-    } = useLanguagePair("en");
+    } = useLanguagePair("image", "en");
     const [isLoading, setIsLoading] = useState(false);
+    const [isSlow, setIsSlow] = useState(false);
     const [errorMessage, setErrorMessage] = useState("");
+    const [copied, setCopied] = useState(false);
 
-    const sourceLanguages = Object.fromEntries(
+    const imageLanguages = Object.fromEntries(
         Object.entries(languages).filter(([, code]) =>
-            OCR_SUPPORTED_CODES.includes(code),
+            IMAGE_LANGUAGE_CODES.includes(code),
         ),
     );
 
-    const handleImageSelect = (file: File) => {
-        if (originalImageUrl) URL.revokeObjectURL(originalImageUrl);
-        setOriginalImageUrl(URL.createObjectURL(file));
-        setSelectedImage(file);
+    // Free the preview's object URL when it's replaced or the card unmounts
+    useEffect(() => {
+        if (!originalImageUrl) return;
+        return () => URL.revokeObjectURL(originalImageUrl);
+    }, [originalImageUrl]);
+
+    const resetResults = () => {
         setResults([]);
         setTranslatedImage(null);
+        setShowOriginal(false);
         setErrorMessage("");
+    };
+
+    const handleImageSelect = useCallback((file: File) => {
+        setOriginalImageUrl(URL.createObjectURL(file));
+        setSelectedImage(file);
+        resetResults();
+    }, []);
+
+    const handleImageRemove = () => {
+        setOriginalImageUrl(null);
+        setSelectedImage(null);
+        resetResults();
     };
 
     const handleTranslate = async () => {
@@ -67,10 +89,8 @@ function ImageTranslatorCard({ languages }: ImageTranslatorCardProps) {
         }
 
         setIsLoading(true);
-        setErrorMessage("");
-        setResults([]);
-        setTranslatedImage(null);
-        setShowOriginal(false);
+        resetResults();
+        const slowTimer = setTimeout(() => setIsSlow(true), SLOW_REQUEST_MS);
         try {
             const response = await translateImage(
                 selectedImage,
@@ -87,18 +107,33 @@ function ImageTranslatorCard({ languages }: ImageTranslatorCardProps) {
                 setTranslatedImage(response.translated_image);
             }
         } catch (error) {
-            setErrorMessage("Image translation failed. Please try again.");
+            setErrorMessage(
+                getErrorMessage(
+                    error,
+                    "Image translation failed. Please try again.",
+                ),
+            );
             console.error("Image translation failed:", error);
         } finally {
+            clearTimeout(slowTimer);
+            setIsSlow(false);
             setIsLoading(false);
         }
+    };
+
+    const handleCopyAll = () => {
+        navigator.clipboard.writeText(
+            results.map((result) => result.translated_text).join("\n"),
+        );
+        setCopied(true);
+        setTimeout(() => setCopied(false), 1500);
     };
 
     return (
         <div className="translator-card">
             <LanguageSelector
-                sourceLanguages={sourceLanguages}
-                targetLanguages={languages}
+                sourceLanguages={imageLanguages}
+                targetLanguages={imageLanguages}
                 sourceLanguage={sourceLanguage}
                 targetLanguage={targetLanguage}
                 onSourceChange={setSourceLanguage}
@@ -107,9 +142,30 @@ function ImageTranslatorCard({ languages }: ImageTranslatorCardProps) {
                 allowAutoDetect={false}
             />
 
-            <ImageUpload onImageSelect={handleImageSelect} />
-
-            <TranslateButton isLoading={isLoading} onClick={handleTranslate} />
+            {/* Once translated, the result view replaces the upload area */}
+            {!translatedImage && (
+                <>
+                    <ImageUpload
+                        previewUrl={originalImageUrl}
+                        onImageSelect={handleImageSelect}
+                        onImageRemove={handleImageRemove}
+                        onError={setErrorMessage}
+                        disabled={isLoading}
+                    />
+                    <TranslateButton
+                        isLoading={isLoading}
+                        onClick={handleTranslate}
+                        disabled={!selectedImage}
+                    />
+                </>
+            )}
+            {isSlow && (
+                <p className="image-slow-hint">
+                    Still working. The first translation from a new language
+                    downloads its text recognition model, which can take a
+                    minute.
+                </p>
+            )}
             <ErrorMessage message={errorMessage} />
 
             {translatedImage && (
@@ -129,14 +185,22 @@ function ImageTranslatorCard({ languages }: ImageTranslatorCardProps) {
                                 Original
                             </button>
                         </div>
-                        <a
-                            className="image-download-button"
-                            href={translatedImage}
-                            download={`translated-${targetLanguage}.${translatedImage.startsWith("data:image/png") ? "png" : "jpg"}`}
-                        >
-                            <Download size={16} />
-                            Download
-                        </a>
+                        <div className="image-result-actions">
+                            <button
+                                className="image-secondary-button"
+                                onClick={handleImageRemove}
+                            >
+                                New image
+                            </button>
+                            <a
+                                className="image-download-button"
+                                href={translatedImage}
+                                download={`translated-${targetLanguage}.${translatedImage.startsWith("data:image/png") ? "png" : "jpg"}`}
+                            >
+                                <Download size={16} />
+                                Download
+                            </a>
+                        </div>
                     </div>
                     <img
                         className="image-result-image"
@@ -156,16 +220,32 @@ function ImageTranslatorCard({ languages }: ImageTranslatorCardProps) {
 
             {results.length > 0 && (
                 <div className="image-results-list">
+                    <div className="image-results-header">
+                        <span>
+                            {results.length} text{" "}
+                            {results.length === 1 ? "block" : "blocks"} found
+                        </span>
+                        <button
+                            className="image-secondary-button"
+                            onClick={handleCopyAll}
+                        >
+                            {copied ? <Check size={14} /> : <Copy size={14} />}
+                            {copied ? "Copied" : "Copy all"}
+                        </button>
+                    </div>
                     {results.map((result, index) => (
                         <div key={index} className="image-result-row">
                             <div className="image-result-text-group">
-                                <p className="image-result-original">
+                                <p
+                                    className="image-result-original"
+                                    title={result.original_text}
+                                >
                                     {result.original_text}
                                 </p>
-                            </div>
-                            <span className="image-result-arrow">→</span>
-                            <div className="image-result-text-group">
-                                <p className="image-result-translated">
+                                <p
+                                    className="image-result-translated"
+                                    title={result.translated_text}
+                                >
                                     {result.translated_text}
                                 </p>
                             </div>

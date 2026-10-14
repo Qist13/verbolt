@@ -53,3 +53,69 @@
     border-radius: 10px;
     object-fit: contain;
 }
+
+.image-dropzone.has-preview {
+    position: relative;
+    cursor: default;
+    padding: 20px;
+}
+
+.image-dropzone.has-preview:hover:not(.drag-active) {
+    border-color: var(--border-strong);
+    background-color: var(--input-bg);
+}
+
+.image-preview-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.image-preview-actions button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 12px;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: inherit;
+    color: var(--text-color);
+    background-color: var(--container-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    cursor: pointer;
+    transition:
+        border-color 0.15s ease,
+        color 0.15s ease;
+}
+
+.image-preview-actions button:hover:not(:disabled) {
+    border-color: var(--accent-color);
+    color: var(--accent-color);
+}
+
+.image-preview-actions button:disabled {
+    color: var(--disabled-text);
+    cursor: not-allowed;
+}
+
+.image-drop-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--accent-color);
+    background-color: var(--overlay-bg);
+    border-radius: 14px;
+}
+
+.image-dropzone-hint kbd {
+    padding: 1px 6px;
+    font-size: 12px;
+    font-family: inherit;
+    border-radius: 5px;
+    background-color: var(--container-bg);
+    border: 1px solid var(--border-color);
+}

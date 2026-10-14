@@ -125,3 +125,54 @@
     border: 1px solid var(--border-color);
     background-color: var(--input-bg);
 }
+
+.image-result-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.image-secondary-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: inherit;
+    color: var(--text-color);
+    background-color: var(--container-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    cursor: pointer;
+    transition:
+        border-color 0.15s ease,
+        color 0.15s ease;
+}
+
+.image-secondary-button:hover {
+    border-color: var(--accent-color);
+    color: var(--accent-color);
+}
+
+.image-results-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--muted-text);
+}
+
+.image-slow-hint {
+    margin: 12px 0 0;
+    font-size: 13px;
+    text-align: center;
+    color: var(--muted-text);
+}
+
+@media (max-width: 640px) {
+    .image-result-toolbar {
+        flex-wrap: wrap;
+    }
+}
