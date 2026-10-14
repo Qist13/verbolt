@@ -4,11 +4,11 @@ A full-stack translation web app for text, Morse code, and images. Upload a phot
 
 ## Features
 
-- Translate text between any languages your LibreTranslate server has installed, with auto-detect
-- Encode/decode Morse code
+- Translate text between any languages your LibreTranslate server has installed, with auto-detect that shows the detected language
+- Encode/decode Morse code live as you type, and play it back as audio
 - Translate images: text is detected with OCR (English, Spanish, French, German, Italian, Portuguese, Japanese, Chinese, Korean), then redrawn in the target language in the original position and color
-- Switch between the translated and original image, and download the result
-- Light/dark mode
+- Drop, pick, or paste (Ctrl/Cmd+V) an image; switch between the translated and original image, and download the result
+- Light/dark mode that follows your system, and remembers your languages and mode between visits
 
 ## Roadmap
 
@@ -74,3 +74,12 @@ npm run dev
 ```
 
 Both servers need to be running for the app to work.
+
+### Configuration
+
+| Variable | Where | Default |
+| --- | --- | --- |
+| `LIBRETRANSLATE_URL` | backend | `http://localhost:5000` |
+| `LIBRETRANSLATE_API_KEY` | backend | none |
+| `ALLOWED_ORIGINS` | backend, comma-separated frontend origins | any `localhost` port |
+| `VITE_API_URL` | frontend (`frontend/.env`) | `http://localhost:8000` |
