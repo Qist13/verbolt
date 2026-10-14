@@ -1,7 +1,12 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
+import useStoredState from "./useStoredState";
 
 function useDarkMode() {
-    const [isDarkMode, setIsDarkMode] = useState(false);
+    // Follow the system theme until the user picks one
+    const [isDarkMode, setIsDarkMode] = useStoredState(
+        "verbolt:dark-mode",
+        () => window.matchMedia("(prefers-color-scheme: dark)").matches,
+    );
 
     useEffect(() => {
         document.body.classList.toggle("dark", isDarkMode);

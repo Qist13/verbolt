@@ -53,3 +53,13 @@
         opacity: 0;
     }
 }
+
+.translator-textarea.is-loading {
+    animation: output-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes output-pulse {
+    50% {
+        opacity: 0.6;
+    }
+}

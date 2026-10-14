@@ -1,14 +1,25 @@
-import { useState } from "react";
+import useStoredState from "./useStoredState";
 
 function useLanguagePair(
+    storageKey: string,
     initialSource: string = "auto",
     initialTarget: string = "ja",
 ) {
-    const [sourceLanguage, setSourceLanguage] = useState(initialSource);
-    const [targetLanguage, setTargetLanguage] = useState(initialTarget);
+    const [sourceLanguage, setSourceLanguage] = useStoredState(
+        `verbolt:${storageKey}:source`,
+        initialSource,
+    );
+    const [targetLanguage, setTargetLanguage] = useStoredState(
+        `verbolt:${storageKey}:target`,
+        initialTarget,
+    );
 
-    const swapLanguages = () => {
-        const oldSource = sourceLanguage === "auto" ? "en" : sourceLanguage;
+    // `detectedSource` lets an auto-detected language swap into the target
+    const swapLanguages = (detectedSource?: string | null) => {
+        const oldSource =
+            sourceLanguage === "auto"
+                ? (detectedSource ?? "en")
+                : sourceLanguage;
         setSourceLanguage(targetLanguage);
         setTargetLanguage(oldSource);
     };

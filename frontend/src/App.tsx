@@ -1,39 +1,23 @@
-import { useState } from "react";
-
 import ThemeToggle from "./components/ThemeToggle";
 import ModeToggle from "./components/ModeToggle";
 import type { TranslationMode } from "./components/ModeToggle";
 import TextTranslatorCard from "./components/TextTranslatorCard";
 import MorseTranslatorCard from "./components/MorseTranslatorCard";
 import ImageTranslatorCard from "./components/ImageTranslatorCard";
+import ServiceBanner from "./components/ServiceBanner";
 
 import useDarkMode from "./hooks/useDarkMode";
 import useLanguages from "./hooks/useLanguages";
+import useStoredState from "./hooks/useStoredState";
 
 import "./App.css";
 
 function App() {
     const { isDarkMode, toggleDarkMode } = useDarkMode();
-    const { languages } = useLanguages();
-    const [activeMode, setActiveMode] = useState<TranslationMode>("text");
-
-    const ocrSupportedCodes = [
-        "en",
-        "es",
-        "fr",
-        "de",
-        "it",
-        "pt",
-        "ja",
-        "ko",
-        "zh-Hans",
-        "zh",
-    ];
-
-    const imageLanguages = Object.fromEntries(
-        Object.entries(languages).filter(([, code]) =>
-            ocrSupportedCodes.includes(code),
-        ),
+    const { languages, error: languagesError, retry } = useLanguages();
+    const [activeMode, setActiveMode] = useStoredState<TranslationMode>(
+        "verbolt:mode",
+        "text",
     );
 
     return (
@@ -46,22 +30,16 @@ function App() {
                 </p>
             </header>
             <ModeToggle activeMode={activeMode} onModeChange={setActiveMode} />
+            {/* Morse runs entirely in the browser, so it doesn't need the server */}
+            {languagesError && activeMode !== "morse" && (
+                <ServiceBanner message={languagesError} onRetry={retry} />
+            )}
             {activeMode === "text" && (
                 <TextTranslatorCard languages={languages} />
             )}
             {activeMode === "morse" && <MorseTranslatorCard />}
             {activeMode === "image" && (
-                <ImageTranslatorCard languages={imageLanguages} />
-            )}
-            {activeMode === "voice" && (
-                <p className="coming-soon-text">
-                    Voice translation coming soon.
-                </p>
-            )}
-            {activeMode === "video" && (
-                <p className="coming-soon-text">
-                    Video translation coming soon.
-                </p>
+                <ImageTranslatorCard languages={languages} />
             )}
         </div>
     );

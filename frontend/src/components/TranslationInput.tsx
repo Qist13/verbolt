@@ -7,6 +7,9 @@ interface TranslationInputProps {
     onClear: () => void;
     maxLength: number;
     isLoading: boolean;
+    // Called on Ctrl/Cmd+Enter
+    onSubmit?: () => void;
+    placeholder?: string;
 }
 
 function TranslationInput({
@@ -15,6 +18,8 @@ function TranslationInput({
     onClear,
     maxLength,
     isLoading,
+    onSubmit,
+    placeholder = "Enter text to translate",
 }: TranslationInputProps) {
     return (
         <div className="textarea-wrapper">
@@ -22,7 +27,18 @@ function TranslationInput({
                 className="translator-textarea"
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
-                placeholder="Enter text to translate"
+                onKeyDown={(e) => {
+                    if (
+                        onSubmit &&
+                        e.key === "Enter" &&
+                        (e.ctrlKey || e.metaKey)
+                    ) {
+                        e.preventDefault();
+                        onSubmit();
+                    }
+                }}
+                placeholder={placeholder}
+                aria-label="Text to translate"
                 rows={6}
                 maxLength={maxLength}
             />

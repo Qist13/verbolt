@@ -4,9 +4,15 @@ import "./TranslationOutput.css";
 
 interface TranslationOutputProps {
     value: string;
+    placeholder?: string;
+    isLoading?: boolean;
 }
 
-function TranslationOutput({ value }: TranslationOutputProps) {
+function TranslationOutput({
+    value,
+    placeholder = "Translation will appear here",
+    isLoading = false,
+}: TranslationOutputProps) {
     const [showCopiedMessage, setShowCopiedMessage] = useState(false);
 
     const handleCopy = () => {
@@ -18,11 +24,13 @@ function TranslationOutput({ value }: TranslationOutputProps) {
     return (
         <div className="textarea-wrapper">
             <textarea
-                className="translator-textarea"
+                className={`translator-textarea ${isLoading ? "is-loading" : ""}`}
                 value={value}
                 readOnly
                 rows={6}
-                placeholder="Translation will appear here"
+                placeholder={isLoading ? "Translating..." : placeholder}
+                aria-label="Translation"
+                aria-busy={isLoading}
             />
             {value && (
                 <button

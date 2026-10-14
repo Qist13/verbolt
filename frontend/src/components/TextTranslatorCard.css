@@ -27,3 +27,14 @@
         gap: 12px;
     }
 }
+
+.detected-language {
+    margin: -6px 0 12px 4px;
+    font-size: 13px;
+    color: var(--muted-text);
+}
+
+.detected-language strong {
+    color: var(--accent-color);
+    font-weight: 600;
+}

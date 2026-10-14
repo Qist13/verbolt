@@ -10,6 +10,8 @@ interface LanguageSelectorProps {
     onTargetChange: (value: string) => void;
     onSwap: () => void;
     allowAutoDetect?: boolean;
+    // Defaults to disabled while the source is "auto"
+    swapDisabled?: boolean;
 }
 
 function LanguageSelector({
@@ -21,11 +23,13 @@ function LanguageSelector({
     onTargetChange,
     onSwap,
     allowAutoDetect = true,
+    swapDisabled = sourceLanguage === "auto",
 }: LanguageSelectorProps) {
     return (
         <div className="language-row">
             <select
                 className="language-select"
+                aria-label="Source language"
                 value={sourceLanguage}
                 onChange={(e) => onSourceChange(e.target.value)}
             >
@@ -39,8 +43,8 @@ function LanguageSelector({
 
             <button
                 className="swap-button"
-                onClick={onSwap}
-                disabled={sourceLanguage === "auto"}
+                onClick={() => onSwap()}
+                disabled={swapDisabled}
                 aria-label="Swap languages"
             >
                 <ArrowLeftRight size={16} />
@@ -48,6 +52,7 @@ function LanguageSelector({
 
             <select
                 className="language-select"
+                aria-label="Target language"
                 value={targetLanguage}
                 onChange={(e) => onTargetChange(e.target.value)}
             >

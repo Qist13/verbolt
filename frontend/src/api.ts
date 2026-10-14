@@ -1,17 +1,31 @@
 import axios from "axios";
 
-const API_BASE_URL = "http://localhost:8000";
+const API_BASE_URL = (
+    import.meta.env.VITE_API_URL ?? "http://localhost:8000"
+).replace(/\/$/, "");
 
 export interface TranslateResponse {
     translated_text: string;
-    source_language: string;
-    target_language: string;
+    // Set when the source language was "auto"
+    detected_language: string | null;
 }
 
 export interface ImageTranslationResult {
     original_text: string;
     translated_text: string;
     confidence: number;
+}
+
+/** The backend's error detail if there is one, otherwise `fallback`. */
+export function getErrorMessage(error: unknown, fallback: string): string {
+    if (axios.isAxiosError(error)) {
+        if (!error.response) {
+            return "Can't reach the Verbolt server. Is the backend running?";
+        }
+        const detail = error.response.data?.detail;
+        if (typeof detail === "string") return detail;
+    }
+    return fallback;
 }
 
 export async function translateText(

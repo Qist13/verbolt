@@ -1,0 +1,56 @@
+.service-banner {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    max-width: 880px;
+    margin-bottom: 16px;
+    padding: 12px 16px;
+    color: var(--error-color);
+    background-color: var(--error-bg);
+    border: 1px solid var(--error-color);
+    border-radius: 14px;
+}
+
+.service-banner-icon {
+    flex-shrink: 0;
+}
+
+.service-banner-text {
+    flex: 1;
+    min-width: 0;
+}
+
+.service-banner-title {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.service-banner-message {
+    margin: 2px 0 0;
+    font-size: 13px;
+    color: var(--text-color);
+    opacity: 0.8;
+}
+
+.service-banner-retry {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+    padding: 8px 12px;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: inherit;
+    color: var(--error-color);
+    background-color: var(--container-bg);
+    border: 1px solid var(--error-color);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: filter 0.15s ease;
+}
+
+.service-banner-retry:hover {
+    filter: brightness(0.95);
+}
