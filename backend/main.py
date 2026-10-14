@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 import easyocr
 import numpy as np
-from PIL import Image, ImageOps
+from PIL import Image, ImageOps, UnidentifiedImageError
 import base64
 import io
 import os
@@ -16,27 +16,29 @@ from image_render import render_translated_image
 
 LIBRETRANSLATE_URL = os.getenv("LIBRETRANSLATE_URL", "http://localhost:5000").rstrip("/")
 LIBRETRANSLATE_API_KEY = os.getenv("LIBRETRANSLATE_API_KEY")
+# Comma-separated list of frontend origins allowed to call the API. When unset,
+# any localhost port is allowed, since Vite moves to 5174+ if 5173 is taken.
+ALLOWED_ORIGINS = [
+    origin.strip()
+    for origin in os.getenv("ALLOWED_ORIGINS", "").split(",")
+    if origin.strip()
+]
+LOCALHOST_ORIGIN_REGEX = r"http://(localhost|127\.0\.0\.1)(:\d+)?"
+
+MAX_IMAGE_BYTES = 10 * 1024 * 1024
+# Very large images make OCR slow without improving accuracy
+MAX_IMAGE_PIXELS = 40_000_000
 
 app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=ALLOWED_ORIGINS,
+    allow_origin_regex=None if ALLOWED_ORIGINS else LOCALHOST_ORIGIN_REGEX,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-SUPPORTED_OCR_LANGUAGES = {
-    "en": "English",
-    "es": "Spanish",
-    "fr": "French",
-    "de": "German",
-    "it": "Italian",
-    "pt": "Portuguese",
-    "ja": "Japanese",
-    "ko": "Korean",
-}
 
 # EasyOCR can't mix CJK scripts in one reader (each only pairs with English),
 # so each script gets its own reader. Readers are loaded on first use and cached.
@@ -65,8 +67,12 @@ def get_ocr_reader(source_language: str) -> easyocr.Reader:
         return _load_ocr_reader(languages)
 
 
-def libretranslate(texts: list[str], source: str, target: str) -> list[str]:
-    """Translate a batch of strings in one LibreTranslate request."""
+def libretranslate(texts: list[str], source: str, target: str) -> dict:
+    """Translate a batch of strings in one LibreTranslate request.
+
+    Returns LibreTranslate's response: "translatedText" is a list matching
+    `texts`, and "detectedLanguage" is set when `source` is "auto".
+    """
     payload = {"q": texts, "source": source, "target": target, "format": "text"}
     if LIBRETRANSLATE_API_KEY:
         payload["api_key"] = LIBRETRANSLATE_API_KEY
@@ -82,11 +88,11 @@ def libretranslate(texts: list[str], source: str, target: str) -> list[str]:
         print(f"LibreTranslate error {response.status_code}: {error}")
         raise HTTPException(status_code=502, detail=f"Translation failed: {error}")
 
-    return response.json()["translatedText"]
+    return response.json()
 
 
 class TranslateRequest(BaseModel):
-    text: str = Field(..., max_length=2000)
+    text: str = Field(..., min_length=1, max_length=2000)
     source_language: str
     target_language: str
 
@@ -110,11 +116,19 @@ def health_check():
 
 @app.post("/translate")
 def translate(request: TranslateRequest):
-    [result] = libretranslate(
+    data = libretranslate(
         [request.text], request.source_language, request.target_language
     )
 
-    return {"translated_text": result}
+    # Batch requests get one detection per string
+    detected = data.get("detectedLanguage")
+    if isinstance(detected, list):
+        detected = detected[0] if detected else None
+
+    return {
+        "translated_text": data["translatedText"][0],
+        "detected_language": detected.get("language") if detected else None,
+    }
 
 
 @app.get("/languages")
@@ -149,11 +163,21 @@ def translate_image(
     source_language: str = Form("en"),
     target_language: str = Form("ja"),
 ):
-    image_bytes = file.file.read()
-    image = Image.open(io.BytesIO(image_bytes))
-    original_format = image.format
-    # Phone photos are often stored sideways with an EXIF rotation flag
-    image = ImageOps.exif_transpose(image).convert("RGB")
+    image_bytes = file.file.read(MAX_IMAGE_BYTES + 1)
+    if len(image_bytes) > MAX_IMAGE_BYTES:
+        raise HTTPException(status_code=413, detail="Image is too large (max 10 MB)")
+
+    try:
+        image = Image.open(io.BytesIO(image_bytes))
+        if image.width * image.height > MAX_IMAGE_PIXELS:
+            raise HTTPException(status_code=413, detail="Image dimensions are too large")
+        original_format = image.format
+        # Phone photos are often stored sideways with an EXIF rotation flag
+        image = ImageOps.exif_transpose(image).convert("RGB")
+    except Image.DecompressionBombError:
+        raise HTTPException(status_code=413, detail="Image dimensions are too large")
+    except (UnidentifiedImageError, OSError):
+        raise HTTPException(status_code=400, detail="That file isn't a readable image")
     image_array = np.array(image)
 
     ocr_results = get_ocr_reader(source_language).readtext(image_array)
@@ -172,7 +196,7 @@ def translate_image(
 
     translations = libretranslate(
         [text for _, text, _ in blocks], source_language, target_language
-    )
+    )["translatedText"]
 
     translated_blocks = [
         (bounding_box, text, confidence, translated.strip())
